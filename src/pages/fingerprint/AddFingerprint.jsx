@@ -120,10 +120,7 @@ export default function AddFingerprint() {
         setIsCompressing(true);
 
         try {
-            // Compress the massive native phone picture down to a max width of 1600px 
-            // so we don't crash Node.js `Payload Too Large` limits
-            const compressedBlob = await reduce.toBlob(file, { max: 1600 });
-
+            // Read the exact, raw, uncompressed original file from the phone to guarantee maximum native clarity
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPhotos(prev => {
@@ -137,9 +134,9 @@ export default function AddFingerprint() {
                 e.target.value = ''; // Reset input to allow recapturing
                 setIsCompressing(false);
             };
-            reader.readAsDataURL(compressedBlob);
+            reader.readAsDataURL(file);
         } catch (err) {
-            console.error("Compression failed:", err);
+            console.error("File read failed:", err);
             setIsCompressing(false);
         }
     };
