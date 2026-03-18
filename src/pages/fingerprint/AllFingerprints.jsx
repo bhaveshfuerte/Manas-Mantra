@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Eye } from 'lucide-react';
 import { squadaFont } from './font';
 
 export default function AllFingerprints() {
@@ -51,7 +51,7 @@ export default function AllFingerprints() {
         }
     };
 
-    const handleDownloadPDF = async (record) => {
+    const handleGeneratePDF = async (record, action = 'download') => {
         setDownloadingId(record.id);
         const doc = new jsPDF({ format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -229,7 +229,13 @@ export default function AllFingerprints() {
             doc.text("CEO", pageWidth / 2, pageHeight - 10, { align: "center" });
         }
 
-        doc.save(`${record.name}_Fingerprint_Record.pdf`);
+        if (action === 'view') {
+            const pdfBlob = doc.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl, '_blank');
+        } else {
+            doc.save(`${record.name}_Fingerprint_Record.pdf`);
+        }
         setDownloadingId(null);
     };
 
@@ -260,9 +266,31 @@ export default function AllFingerprints() {
                                 <td data-label="Age">{record.age || '-'}</td>
                                 <td data-label="Contact">{record.contactDetails || '-'}</td>
                                 <td data-label="Scan Date">{new Date(record.scannedAt).toLocaleDateString()}</td>
-                                <td data-label="Actions">
+                                <td data-label="Actions" style={{ display: 'flex', gap: '8px' }}>
                                     <button
-                                        onClick={() => handleDownloadPDF(record)}
+                                        onClick={() => handleGeneratePDF(record, 'view')}
+                                        disabled={downloadingId === record.id}
+                                        className="btn-primary"
+                                        style={{
+                                            padding: '0.4rem 0.8rem',
+                                            fontSize: '0.8rem',
+                                            width: 'auto',
+                                            display: 'flex',
+                                            gap: '4px',
+                                            alignItems: 'center',
+                                            backgroundColor: '#e2e8f0',
+                                            color: '#1e293b',
+                                            opacity: downloadingId === record.id ? 0.7 : 1
+                                        }}
+                                    >
+                                        {downloadingId === record.id ? (
+                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Loading...</>
+                                        ) : (
+                                            <><Eye size={14} /> View PDF</>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => handleGeneratePDF(record, 'download')}
                                         disabled={downloadingId === record.id}
                                         className="btn-primary"
                                         style={{
@@ -276,9 +304,9 @@ export default function AllFingerprints() {
                                         }}
                                     >
                                         {downloadingId === record.id ? (
-                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Generating PDF...</>
+                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Generating...</>
                                         ) : (
-                                            <><Download size={14} /> Download PDF</>
+                                            <><Download size={14} /> Download</>
                                         )}
                                     </button>
                                 </td>
