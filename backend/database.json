@@ -1,0 +1,103 @@
+{
+  "users": [
+    {
+      "id": "super-admin",
+      "name": "Super Admin",
+      "email": "superadmin@manasmantra.com",
+      "password": "admin",
+      "role": "Super Admin",
+      "permissions": [
+        "all"
+      ],
+      "companyId": "all"
+    },
+    {
+      "id": "1773212109031",
+      "name": "Fuerte Developers",
+      "email": "bhaveshfuerte@gmail.com",
+      "password": "Bhavesh@123"
+    },
+    {
+      "id": "1773212264593",
+      "name": "Sandipbhai",
+      "email": "sandip@gmail.com",
+      "password": "Sandip",
+      "role": "Admin",
+      "companyId": "1773212195539",
+      "permissions": [
+        "dashboard",
+        "add-fingerprint",
+        "all-fingerprints"
+      ]
+    }
+  ],
+  "companies": [
+    {
+      "id": "1773207836674",
+      "name": "Fuerte Developers",
+      "contactNumber": "07990486477",
+      "address": "Fuerte Developers\n405, The Spire",
+      "status": "Active"
+    },
+    {
+      "id": "1773212195539",
+      "name": "Manas Mantra",
+      "contactNumber": "9876543211",
+      "address": "Jdjdn",
+      "status": "Active"
+    }
+  ],
+  "fingerprints": [
+    {
+      "id": "1773208417128",
+      "userId": 1773207055832,
+      "companyId": "unassigned",
+      "name": "Fuerte Developers",
+      "age": "28",
+      "study": "SSs",
+      "fatherName": "sss",
+      "contactDetails": "ssss",
+      "photos": {
+        "Left_Little": {
+          "Left": "/uploads/fingerprints/Fuerte_Developers_1773208417128/Left_Little_Left.jpg"
+        },
+        "Left_Ring": {},
+        "Left_Middle": {},
+        "Left_Index": {},
+        "Left_Thumb": {},
+        "Right_Thumb": {},
+        "Right_Index": {},
+        "Right_Middle": {},
+        "Right_Ring": {},
+        "Right_Little": {}
+      },
+      "scannedAt": "2026-03-11T05:53:37.130Z"
+    },
+    {
+      "id": "1773212319450",
+      "userId": 1773145973700,
+      "companyId": "unassigned",
+      "name": "Abc",
+      "age": "22",
+      "study": "Ghjn",
+      "fatherName": "Hjjb",
+      "contactDetails": "9764367789",
+      "photos": {
+        "Left_Little": {
+          "Left": "/uploads/fingerprints/Abc_1773212319450/Left_Little_Left.jpg",
+          "Center": "/uploads/fingerprints/Abc_1773212319450/Left_Little_Center.jpg"
+        },
+        "Left_Ring": {},
+        "Left_Middle": {},
+        "Left_Index": {},
+        "Left_Thumb": {},
+        "Right_Thumb": {},
+        "Right_Index": {},
+        "Right_Middle": {},
+        "Right_Ring": {},
+        "Right_Little": {}
+      },
+      "scannedAt": "2026-03-11T06:58:39.457Z"
+    }
+  ]
+}
