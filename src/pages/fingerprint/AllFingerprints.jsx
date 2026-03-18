@@ -192,7 +192,7 @@ export default function AllFingerprints() {
                         }
 
                         const finalX = startX + xOffset + ((cellWidth - renderWidth) / 2);
-                        doc.addImage(imgObj.dataUrl, 'JPEG', finalX, currentY, renderWidth, renderHeight);
+                        doc.addImage(imgObj.dataUrl, 'JPEG', finalX, currentY, renderWidth, renderHeight, undefined, 'NONE');
 
                         doc.setFontSize(10);
                         doc.text(positionInfo, startX + xOffset + (cellWidth / 2), currentY + renderHeight + 6, { align: "center" });

@@ -120,9 +120,9 @@ export default function AddFingerprint() {
         setIsCompressing(true);
 
         try {
-            // Compress the massive native phone picture down to a max width of 800px 
+            // Compress the massive native phone picture down to a max width of 1600px 
             // so we don't crash Node.js `Payload Too Large` limits
-            const compressedBlob = await reduce.toBlob(file, { max: 800 });
+            const compressedBlob = await reduce.toBlob(file, { max: 1600 });
 
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -304,6 +304,7 @@ export default function AddFingerprint() {
                             ref={webcamRef}
                             screenshotFormat="image/jpeg"
                             screenshotQuality={1}
+                            videoConstraints={{ facingMode: "environment", width: 1920, height: 1080 }}
                             width="100%"
                             style={{ objectFit: 'cover' }}
                         />
