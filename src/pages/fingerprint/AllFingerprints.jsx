@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
-import { Download, Loader2, Eye } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { squadaFont } from './font';
 
 export default function AllFingerprints() {
@@ -51,8 +51,30 @@ export default function AllFingerprints() {
         }
     };
 
-    const handleGeneratePDF = async (record, action = 'download') => {
+    const getImageMetadata = (base64Str) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve({ dataUrl: base64Str, width: img.width, height: img.height });
+            img.onerror = reject;
+            img.src = base64Str;
+        });
+    };
+
+    const handleDownloadPDF = async (record) => {
         setDownloadingId(record.id);
+
+        let photosData = record.photos || {};
+        if (record.photosUrl) {
+            try {
+                const res = await fetch(record.photosUrl);
+                if (res.ok) {
+                    photosData = await res.json();
+                }
+            } catch (err) {
+                console.error("Failed to load photo collection", err);
+            }
+        }
+
         const doc = new jsPDF({ format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
@@ -154,7 +176,7 @@ export default function AllFingerprints() {
         ];
 
         for (const finger of fingers) {
-            const p = record.photos?.[finger] || {};
+            const p = photosData[finger] || {};
 
             if (p.Left || p.Center || p.Right) {
                 // Add new page if Y is getting too low
@@ -179,8 +201,16 @@ export default function AllFingerprints() {
                 const maxHeight = 70;
                 let maxRowHeightUsed = 0;
 
-                const drawPosition = async (url, positionInfo, xOffset) => {
-                    const imgObj = await getBase64ImageFromUrl(url);
+                const drawPosition = async (sourceContent, positionInfo, xOffset) => {
+                    if (!sourceContent) return;
+                    let imgObj = null;
+
+                    if (sourceContent.startsWith('/uploads') || sourceContent.startsWith('http')) {
+                        imgObj = await getBase64ImageFromUrl(sourceContent);
+                    } else if (sourceContent.startsWith('data:image')) {
+                        imgObj = await getImageMetadata(sourceContent);
+                    }
+
                     if (imgObj) {
                         let renderWidth = maxWidth;
                         let renderHeight = renderWidth * (imgObj.height / imgObj.width);
@@ -229,13 +259,7 @@ export default function AllFingerprints() {
             doc.text("CEO", pageWidth / 2, pageHeight - 10, { align: "center" });
         }
 
-        if (action === 'view') {
-            const pdfBlob = doc.output('blob');
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
-        } else {
-            doc.save(`${record.name}_Fingerprint_Record.pdf`);
-        }
+        doc.save(`${record.name}_Fingerprint_Record.pdf`);
         setDownloadingId(null);
     };
 
@@ -266,31 +290,9 @@ export default function AllFingerprints() {
                                 <td data-label="Age">{record.age || '-'}</td>
                                 <td data-label="Contact">{record.contactDetails || '-'}</td>
                                 <td data-label="Scan Date">{new Date(record.scannedAt).toLocaleDateString()}</td>
-                                <td data-label="Actions" style={{ display: 'flex', gap: '8px' }}>
+                                <td data-label="Actions">
                                     <button
-                                        onClick={() => handleGeneratePDF(record, 'view')}
-                                        disabled={downloadingId === record.id}
-                                        className="btn-primary"
-                                        style={{
-                                            padding: '0.4rem 0.8rem',
-                                            fontSize: '0.8rem',
-                                            width: 'auto',
-                                            display: 'flex',
-                                            gap: '4px',
-                                            alignItems: 'center',
-                                            backgroundColor: '#e2e8f0',
-                                            color: '#1e293b',
-                                            opacity: downloadingId === record.id ? 0.7 : 1
-                                        }}
-                                    >
-                                        {downloadingId === record.id ? (
-                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Loading...</>
-                                        ) : (
-                                            <><Eye size={14} /> View PDF</>
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => handleGeneratePDF(record, 'download')}
+                                        onClick={() => handleDownloadPDF(record)}
                                         disabled={downloadingId === record.id}
                                         className="btn-primary"
                                         style={{
@@ -304,9 +306,9 @@ export default function AllFingerprints() {
                                         }}
                                     >
                                         {downloadingId === record.id ? (
-                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Generating...</>
+                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Generating PDF...</>
                                         ) : (
-                                            <><Download size={14} /> Download</>
+                                            <><Download size={14} /> Download PDF</>
                                         )}
                                     </button>
                                 </td>

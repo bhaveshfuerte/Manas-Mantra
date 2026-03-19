@@ -145,24 +145,14 @@ app.post('/api/fingerprints', (req, res) => {
         fs.mkdirSync(dirPath, { recursive: true });
     }
 
-    const savedPhotosPaths = {};
+    const collectionFileName = 'collection.json';
+    let photosUrl = null;
 
-    // photos corresponds to { ThumbL: { left: base64, center: base64, right: base64 }, ... }
     if (photos && typeof photos === 'object') {
-        Object.keys(photos).forEach(finger => {
-            savedPhotosPaths[finger] = {};
-            const positions = photos[finger];
-            Object.keys(positions).forEach(pos => {
-                if (positions[pos]) {
-                    const fileName = `${finger}_${pos}`;
-                    const relativePath = saveBase64Image(positions[pos], dirPath, fileName);
-                    if (relativePath) {
-                        // Save just the relative URL for the DB
-                        savedPhotosPaths[finger][pos] = `/uploads/fingerprints/${name.replace(/\s+/g, '_')}_${recordId}/${fileName}.jpg`;
-                    }
-                }
-            });
-        });
+        const collectionPath = path.join(dirPath, collectionFileName);
+        // Save all 30 uncompressed photos into a single JSON "collection" to bypass slow network loading!
+        fs.writeFileSync(collectionPath, JSON.stringify(photos));
+        photosUrl = `/uploads/fingerprints/${name.replace(/\s+/g, '_')}_${recordId}/${collectionFileName}`;
     }
 
     const fp = {
@@ -170,7 +160,8 @@ app.post('/api/fingerprints', (req, res) => {
         userId: userId || 'anonymous',
         companyId: companyId || 'unassigned',
         name, age, study, fatherName, contactDetails,
-        photos: savedPhotosPaths,
+        photosUrl: photosUrl,
+        photos: {}, // Retained empty for backwards compatibility shape
         scannedAt: new Date()
     };
 

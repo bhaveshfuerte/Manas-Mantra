@@ -25,10 +25,7 @@ export default function AddFingerprint() {
         return savedForm ? JSON.parse(savedForm) : { name: '', age: '', study: '', fatherName: '', contactDetails: '' };
     });
 
-    const [photos, setPhotos] = useState(() => {
-        const savedPhotos = localStorage.getItem('fp_photos');
-        return savedPhotos ? JSON.parse(savedPhotos) : getInitialPhotos();
-    });
+    const [photos, setPhotos] = useState(() => getInitialPhotos());
 
     const [isCompressing, setIsCompressing] = useState(false);
 
@@ -44,9 +41,7 @@ export default function AddFingerprint() {
         localStorage.setItem('fp_form_data', JSON.stringify(formData));
     }, [formData]);
 
-    useEffect(() => {
-        localStorage.setItem('fp_photos', JSON.stringify(photos));
-    }, [photos]);
+    // Removed fp_photos localStorage caching since uncompressed 12MP photos instantly crush the browser's 5MB localStorage limit and freeze the app!
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -175,7 +170,6 @@ export default function AddFingerprint() {
                 setFormData({ name: '', age: '', study: '', fatherName: '', contactDetails: '' });
                 setPhotos(getInitialPhotos());
                 localStorage.removeItem('fp_form_data');
-                localStorage.removeItem('fp_photos');
             } else {
                 const errData = await res.json().catch(() => ({}));
                 alert(`Failed to save data. Server responded with: ${res.statusText} ${errData.message || ''}`);
