@@ -75,6 +75,35 @@ export default function AllFingerprints() {
             }
         }
 
+        let compName = "Biometric Solutions";
+        let compContact = "123-456-7890";
+        let compAddress = "123 Business Avenue, Tech District";
+        
+        try {
+            // First try matching the record's company ID
+            let fetchedCompanyId = record.companyId && record.companyId !== 'unassigned' ? record.companyId : null;
+            
+            // If the record has no assigned company, assume they belong to the current logged-in user's company
+            if (!fetchedCompanyId) {
+                const localUser = JSON.parse(localStorage.getItem('user'));
+                if (localUser && localUser.companyId && localUser.companyId !== 'all') {
+                    fetchedCompanyId = localUser.companyId;
+                }
+            }
+
+            if (fetchedCompanyId) {
+                const compRes = await fetch(`/api/companies?companyId=${fetchedCompanyId}`);
+                if (compRes.ok) {
+                    const compData = await compRes.json();
+                    if (compData.length > 0) {
+                        compName = compData[0].name || compName;
+                        compContact = compData[0].contactNumber || compContact;
+                        compAddress = compData[0].address || compAddress;
+                    }
+                }
+            }
+        } catch(e) {}
+
         const doc = new jsPDF({ format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
@@ -94,45 +123,53 @@ export default function AllFingerprints() {
         doc.line(-20, 50, pageWidth - 50, pageHeight + 20);
 
         // 3. Header Logo (Top Left)
-        const primaryBrownColor = '#594a3b';
         doc.setFillColor(114, 98, 85);
-        doc.setDrawColor(114, 98, 85);
-        doc.setLineWidth(1.5);
-
-        // Custom simple geometric logo similar to the given swirl
-        const cx = 25, cy = 25, r1 = 8, r2 = 14;
-        doc.circle(cx, cy, 3, 'F');
-        for (let i = 0; i < 6; i++) {
-            const angle = (i * 60) * Math.PI / 180;
-            const xOffset = Math.cos(angle) * r1;
-            const yOffset = Math.sin(angle) * r1;
-            const edgeX = Math.cos(angle) * r2;
-            const edgeY = Math.sin(angle) * r2;
-            doc.line(cx + xOffset, cy + yOffset, cx + edgeX, cy + edgeY);
-            doc.ellipse(cx + (xOffset * 1.4), cy + (yOffset * 1.4), 2, 4, 'F', (i * 60) + 90);
-        }
+        // Clean, minimalist tech startup Monogram box logo
+        doc.roundedRect(16, 16, 22, 22, 3, 3, 'F');
+        
+        const initials = compName.split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase() || "BS";
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('SquadaOne', 'normal');
+        doc.setFontSize(22);
+        doc.text(initials, 27, 32, { align: 'center' });
 
         // 4. Company Name
         doc.setTextColor(89, 74, 59); // Dark Brown
-        doc.setFont('SquadaOne', 'normal');
-        doc.setFontSize(38);
-        doc.text("Company Name", 45, 30);
+        doc.setFontSize(32);
+        // Truncate to avoid overlapping contact details
+        doc.text(compName.substring(0, 30), 45, 33);
 
         // 5. Contact Details (Top Right)
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(50, 50, 50);
-        const rightAlign = pageWidth - 14;
-        // Mock icons using simple shapes
-        doc.rect(pageWidth - 62, 14, 3, 5, 'S'); // Phone icon box
-        doc.text("123-456-7890", pageWidth - 56, 18);
+        
+        doc.setDrawColor(114, 98, 85);
+        const iconX = pageWidth - 63;
+        
+        // Smart Phone 📱
+        doc.setFillColor(114, 98, 85);
+        doc.roundedRect(iconX, 14, 3.5, 6, 0.5, 0.5, 'F');
+        doc.setFillColor(255, 255, 255);
+        doc.circle(iconX + 1.75, 18.5, 0.4, 'F');
+        doc.rect(iconX + 0.5, 14.5, 2.5, 3.5, 'F');
+        doc.text(compContact, iconX + 7, 18);
 
-        doc.rect(pageWidth - 62, 22, 5, 3.5, 'S'); // Mail icon box
-        doc.line(pageWidth - 62, 22, pageWidth - 59.5, 24); doc.line(pageWidth - 59.5, 24, pageWidth - 57, 22);
-        doc.text("hello@reallygreatsite.com", pageWidth - 56, 25);
+        // Envelope ✉️
+        doc.setFillColor(114, 98, 85);
+        doc.roundedRect(iconX, 22, 5, 3.5, 0.5, 0.5, 'F');
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.4);
+        doc.line(iconX + 0.5, 22.5, iconX + 2.5, 24); doc.line(iconX + 2.5, 24, iconX + 4.5, 22.5);
+        doc.text("support@company.com", iconX + 7, 25);
 
-        doc.rect(pageWidth - 62, 30, 4, 4, 'S'); doc.triangle(pageWidth - 64, 30, pageWidth - 60, 27, pageWidth - 56, 30, 'S'); // Home icon
-        doc.text("123 Anywhere St., Any City", pageWidth - 56, 33);
+        // Location Pin 📍
+        doc.setFillColor(114, 98, 85);
+        doc.circle(iconX + 2.5, 30.5, 1.8, 'F');
+        doc.triangle(iconX + 0.9, 30.5, iconX + 4.1, 30.5, iconX + 2.5, 34, 'F');
+        doc.setFillColor(255, 255, 255);
+        doc.circle(iconX + 2.5, 30.5, 0.7, 'F');
+        doc.text(compAddress.substring(0, 45), iconX + 7, 33);
 
         // 6. Section Ribbon "FINGER PRINT DATA"
         const ribbonColor = '#8c7d6e'; // Mid-brown
@@ -252,11 +289,11 @@ export default function AllFingerprints() {
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(89, 74, 59);
-            doc.text("[COMPANY NAME]", pageWidth / 2, pageHeight - 15, { align: "center" });
+            doc.text(compName.toUpperCase(), pageWidth / 2, pageHeight - 15, { align: "center" });
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(100, 100, 100);
-            doc.text("CEO", pageWidth / 2, pageHeight - 10, { align: "center" });
+            doc.text("Authorized Signature", pageWidth / 2, pageHeight - 10, { align: "center" });
         }
 
         doc.save(`${record.name}_Fingerprint_Record.pdf`);
