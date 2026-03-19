@@ -9,6 +9,8 @@ import AllCompany from './pages/company/AllCompany';
 import AllUsers from './pages/company/AllUsers';
 import AddFingerprint from './pages/fingerprint/AddFingerprint';
 import AllFingerprints from './pages/fingerprint/AllFingerprints';
+import ViewFingerprint from './pages/fingerprint/ViewFingerprint';
+import AdminSettings from './pages/AdminSettings';
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
 
           <Route path="fingerprint/add" element={<AddFingerprint />} />
           <Route path="fingerprint/all" element={<AllFingerprints />} />
+          <Route path="fingerprint/view/:id" element={<ViewFingerprint />} />
+          <Route path="admin" element={<AdminSettings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Eye } from 'lucide-react';
 import { squadaFont } from './font';
 
 export default function AllFingerprints() {
@@ -290,7 +290,23 @@ export default function AllFingerprints() {
                                 <td data-label="Age">{record.age || '-'}</td>
                                 <td data-label="Contact">{record.contactDetails || '-'}</td>
                                 <td data-label="Scan Date">{new Date(record.scannedAt).toLocaleDateString()}</td>
-                                <td data-label="Actions">
+                                <td data-label="Actions" style={{ display: 'flex', gap: '8px' }}>
+                                    <button
+                                        onClick={() => window.open(`/fingerprint/view/${record.id}`, '_blank')}
+                                        className="btn-primary"
+                                        style={{
+                                            padding: '0.4rem 0.8rem',
+                                            fontSize: '0.8rem',
+                                            width: 'auto',
+                                            display: 'flex',
+                                            gap: '4px',
+                                            alignItems: 'center',
+                                            backgroundColor: '#e2e8f0',
+                                            color: '#1e293b'
+                                        }}
+                                    >
+                                        <Eye size={14} /> View
+                                    </button>
                                     <button
                                         onClick={() => handleDownloadPDF(record)}
                                         disabled={downloadingId === record.id}
@@ -306,9 +322,9 @@ export default function AllFingerprints() {
                                         }}
                                     >
                                         {downloadingId === record.id ? (
-                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Generating PDF...</>
+                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Generating...</>
                                         ) : (
-                                            <><Download size={14} /> Download PDF</>
+                                            <><Download size={14} /> Download</>
                                         )}
                                     </button>
                                 </td>

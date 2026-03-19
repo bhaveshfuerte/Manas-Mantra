@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AllCompany() {
     const [companies, setCompanies] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
 
@@ -58,7 +60,15 @@ export default function AllCompany() {
                                         {c.status || 'Active'}
                                     </span>
                                 </td>
-                                <td><button className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}>View</button></td>
+                                <td>
+                                    <button 
+                                        className="btn-primary" 
+                                        onClick={() => navigate('/admin', { state: { company: c } })}
+                                        style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
+                                    >
+                                        Edit
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                         {companies.length === 0 && (

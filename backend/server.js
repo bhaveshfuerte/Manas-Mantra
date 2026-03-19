@@ -92,6 +92,15 @@ app.get('/api/companies', (req, res) => {
     res.status(200).json(filtered);
 });
 
+app.put('/api/companies/:id', (req, res) => {
+    const { id } = req.params;
+    const index = db.companies.findIndex(c => c.id === id);
+    if (index === -1) return res.status(404).json({ message: 'Company not found' });
+    db.companies[index] = { ...db.companies[index], ...req.body };
+    saveDb();
+    res.status(200).json({ message: 'Company updated', company: db.companies[index] });
+});
+
 app.post('/api/users', (req, res) => {
     const { name, email, password, role, companyId, permissions } = req.body;
 
@@ -182,6 +191,12 @@ app.get('/api/fingerprints', (req, res) => {
     }
 
     res.status(200).json(filtered);
+});
+
+app.get('/api/fingerprints/:id', (req, res) => {
+    const record = db.fingerprints.find(f => f.id === req.params.id);
+    if (!record) return res.status(404).json({ message: 'Fingerprint record not found' });
+    res.status(200).json(record);
 });
 
 // Serve frontend static files in production

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Fingerprint, LogOut, Building, List } from 'lucide-react';
+import { LayoutDashboard, Users, Fingerprint, LogOut, Building, List, Settings } from 'lucide-react';
 
 export default function Sidebar({ onClose }) {
     const location = useLocation();
@@ -77,6 +77,11 @@ export default function Sidebar({ onClose }) {
                         </div>
                     </>
                 )}
+
+                <Link to="/admin" className={`menu-item ${isActive('/admin') ? 'active' : ''}`}>
+                    <Settings size={20} />
+                    Admin Settings
+                </Link>
             </nav>
 
             <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
