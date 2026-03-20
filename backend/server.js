@@ -4,6 +4,9 @@ import bodyParser from 'body-parser';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -200,7 +203,7 @@ app.get('/api/fingerprints/:id', (req, res) => {
 });
 
 // Serve frontend static files in production
-const distPath = path.join(__dirname, '../dist');
+const distPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(distPath));
 app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
