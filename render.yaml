@@ -2,19 +2,18 @@ services:
   - type: web
     name: manas-mantra-backend
     runtime: node
-    buildCommand: npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend
-    startCommand: npm start
+    buildCommand: npm ci --prefix backend
+    startCommand: npm --prefix backend start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-    healthCheckPath: /
 
   - type: web
     name: manas-mantra-frontend
     runtime: static
-    buildCommand: npm install --prefix frontend && npm run build --prefix frontend
+    buildCommand: npm ci --prefix frontend && npm run build --prefix frontend
     staticPublishPath: ./frontend/dist
     routes:
       - path: /
