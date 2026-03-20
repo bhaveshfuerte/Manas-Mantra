@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 
 export default function AdminSettings() {
-    const location = useLocation();
-    const passedCompany = location.state?.company;
-
-    const [companyDetails, setCompanyDetails] = useState(
-        passedCompany || { id: '', name: '', contactNumber: '', address: '', status: 'Active' }
-    );
-    const [isLoading, setIsLoading] = useState(!passedCompany);
+    const [companyDetails, setCompanyDetails] = useState({ id: '', name: '', contactNumber: '', address: '', status: 'Active' });
+    const [isLoading, setIsLoading] = useState(true);
+    const [isRestricted, setIsRestricted] = useState(false);
 
     useEffect(() => {
-        if (passedCompany) return; // Skip fetching if we already have it from navigation
-
         let loggedInUser = {};
         try {
             loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
         } catch (e) {
             console.error("Corrupted local user");
+        }
+
+        if (loggedInUser.role === 'Super Admin') {
+            setIsRestricted(true);
+            setIsLoading(false);
+            return;
         }
 
         if (loggedInUser.companyId && loggedInUser.companyId !== 'all') {
@@ -31,18 +30,6 @@ export default function AdminSettings() {
                 })
                 .catch(err => {
                     console.error("Error fetching company", err);
-                    setIsLoading(false);
-                });
-        } else if (loggedInUser.role === 'Super Admin') {
-            fetch(`/api/companies`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        setCompanyDetails(data[0]); 
-                    }
-                    setIsLoading(false);
-                })
-                .catch(err => {
                     setIsLoading(false);
                 });
         } else {
@@ -73,12 +60,23 @@ export default function AdminSettings() {
 
     if (isLoading) return <div style={{ padding: '2rem' }}>Loading Admin Settings...</div>;
 
+    if (isRestricted) {
+        return (
+            <div style={{ padding: '2rem' }}>
+                <div className="page-header">
+                    <h1>Admin Settings Restricted</h1>
+                    <p>As a Super Admin, please use the <b>All Company</b> page to manage and edit specific companies. Only a Company Admin can edit their own company's details here.</p>
+                </div>
+            </div>
+        );
+    }
+
     if (!companyDetails.id) {
         return (
             <div style={{ padding: '2rem' }}>
                 <div className="page-header">
                     <h1>Admin Settings</h1>
-                    <p>No company assigned to your profile yet. Please create a company first.</p>
+                    <p>Admin Settings page not edit data of company this page is empty only Admin can edit their data.</p>
                 </div>
             </div>
         );

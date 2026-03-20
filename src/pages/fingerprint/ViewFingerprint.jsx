@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download } from 'lucide-react';
 
 export default function ViewFingerprint() {
     const { id } = useParams();
@@ -41,6 +41,15 @@ export default function ViewFingerprint() {
         'Right_Thumb', 'Right_Index', 'Right_Middle', 'Right_Ring', 'Right_Little'
     ];
     const positions = ['Left', 'Center', 'Right'];
+
+    const downloadSingleImage = (sourceUrl, fingerName, position) => {
+        const link = document.createElement('a');
+        link.href = sourceUrl;
+        link.download = `${record.name}_${fingerName}_${position}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <div style={{ paddingBottom: '2rem' }}>
@@ -84,6 +93,13 @@ export default function ViewFingerprint() {
                                                 alt={`${finger} ${pos}`}
                                                 style={{ maxWidth: '280px', maxHeight: '350px', objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', backgroundColor: '#f8fafc' }}
                                             />
+                                            <button
+                                                onClick={() => downloadSingleImage(src, finger, pos)}
+                                                className="btn-secondary"
+                                                style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                                            >
+                                                <Download size={14} /> Download Image
+                                            </button>
                                         </div>
                                     );
                                 })}

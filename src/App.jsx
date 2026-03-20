@@ -4,8 +4,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AddCompany from './pages/company/AddCompany';
-import AddUser from './pages/company/AddUser';
 import AllCompany from './pages/company/AllCompany';
+import EditCompany from './pages/company/EditCompany';
+import AddUser from './pages/company/AddUser';
 import AllUsers from './pages/company/AllUsers';
 import AddFingerprint from './pages/fingerprint/AddFingerprint';
 import AllFingerprints from './pages/fingerprint/AllFingerprints';
@@ -24,8 +25,9 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="company/add-company" element={<AddCompany />} />
-          <Route path="company/add-user" element={<AddUser />} />
           <Route path="company/all-company" element={<AllCompany />} />
+          <Route path="company/edit-company" element={<EditCompany />} />
+          <Route path="company/add-user" element={<AddUser />} />
           <Route path="company/all-users" element={<AllUsers />} />
 
           <Route path="fingerprint/add" element={<AddFingerprint />} />

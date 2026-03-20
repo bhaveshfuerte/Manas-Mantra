@@ -35,6 +35,17 @@
       "name": "tirth",
       "email": "tirth@gmail.com",
       "password": "Tirth@123"
+    },
+    {
+      "id": "1774003685013",
+      "name": "Tirth Admin",
+      "email": "tirthadmin@gmail.com",
+      "password": "Admin@123456",
+      "role": "Super Admin",
+      "companyId": null,
+      "permissions": [
+        "all"
+      ]
     }
   ],
   "companies": [

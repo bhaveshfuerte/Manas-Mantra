@@ -63,7 +63,7 @@ export default function AllCompany() {
                                 <td>
                                     <button 
                                         className="btn-primary" 
-                                        onClick={() => navigate('/admin', { state: { company: c } })}
+                                        onClick={() => navigate('/company/edit-company', { state: { company: c } })}
                                         style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
                                     >
                                         Edit
