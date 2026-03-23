@@ -7,9 +7,7 @@ export default function AllFingerprints() {
     const [records, setRecords] = useState([]);
     const [downloadingId, setDownloadingId] = useState(null);
     const [companies, setCompanies] = useState([]);
-    const [selectedCompanyId, setSelectedCompanyId] = useState('');
-    const [systemUsers, setSystemUsers] = useState([]);
-    const [selectedUserId, setSelectedUserId] = useState('');
+    const [searchName, setSearchName] = useState('');
 
     const loggedInUser = (() => {
         try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
@@ -24,11 +22,6 @@ export default function AllFingerprints() {
             fetch(`/api/companies`)
                 .then(res => res.json())
                 .then(data => setCompanies(data))
-                .catch(e => console.error(e));
-
-            fetch(`/api/users`)
-                .then(res => res.json())
-                .then(data => setSystemUsers(data))
                 .catch(e => console.error(e));
         }
 
@@ -314,11 +307,15 @@ export default function AllFingerprints() {
         setDownloadingId(null);
     };
 
-    const displayedRecords = records.filter(r => {
-        const matchCompany = selectedCompanyId ? r.companyId === selectedCompanyId : true;
-        const matchUser = selectedUserId ? String(r.userId) === String(selectedUserId) : true;
-        return matchCompany && matchUser;
-    });
+    const displayedRecords = searchName
+        ? records.filter(r => {
+            const searchVal = searchName.toLowerCase();
+            const matchName = r.name?.toLowerCase().includes(searchVal);
+            const comp = companies.find(c => c.id === r.companyId);
+            const matchCompany = comp ? comp.name.toLowerCase().includes(searchVal) : false;
+            return matchName || matchCompany;
+        })
+        : records;
 
     return (
         <div style={{ paddingBottom: '2rem' }}>
@@ -329,30 +326,14 @@ export default function AllFingerprints() {
                 </div>
                 {loggedInUser.role === 'Super Admin' && (
                     <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
-                        <select 
+                        <input 
+                            type="text" 
                             className="form-input" 
-                            style={{ margin: 0, minWidth: '200px' }}
-                            value={selectedCompanyId} 
-                            onChange={(e) => setSelectedCompanyId(e.target.value)}
-                            title="Filter by Company"
-                        >
-                            <option value="">All Companies / Branches</option>
-                            {companies.map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                        </select>
-                        <select 
-                            className="form-input" 
-                            style={{ margin: 0, minWidth: '200px' }}
-                            value={selectedUserId} 
-                            onChange={(e) => setSelectedUserId(e.target.value)}
-                            title="Filter by System User"
-                        >
-                            <option value="">All System Users</option>
-                            {systemUsers.map(u => (
-                                <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-                            ))}
-                        </select>
+                            style={{ margin: 0, minWidth: '250px' }}
+                            placeholder="Search by Company or Name..."
+                            value={searchName}
+                            onChange={(e) => setSearchName(e.target.value)}
+                        />
                     </div>
                 )}
             </div>
