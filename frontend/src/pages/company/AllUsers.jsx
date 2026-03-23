@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,11 +26,29 @@ export default function AllUsers() {
             .catch(err => console.error("Error fetching users:", err));
     }, []);
 
+    const displayedUsers = users.filter(u => 
+        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.role?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div>
-            <div className="page-header">
-                <h1>All Users</h1>
-                <p>List of all registered system users.</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                    <h1>All Users</h1>
+                    <p>List of all registered system users.</p>
+                </div>
+                <div style={{ minWidth: '250px' }}>
+                    <input 
+                        type="text" 
+                        placeholder="Search users..." 
+                        className="form-input" 
+                        style={{ margin: 0 }}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </div>
 
             <div className="content-card" style={{ overflowX: 'auto' }}>
@@ -45,7 +64,7 @@ export default function AllUsers() {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map(u => (
+                        {displayedUsers.map(u => (
                             <tr key={u.id}>
                                 <td style={{ fontWeight: '500' }}>{u.name}</td>
                                 <td>{u.email}</td>
@@ -89,7 +108,7 @@ export default function AllUsers() {
                                 </td>
                             </tr>
                         ))}
-                        {users.length === 0 && (
+                        {displayedUsers.length === 0 && (
                             <tr>
                                 <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>No users found.</td>
                             </tr>

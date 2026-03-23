@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function AllCompany() {
     const [companies, setCompanies] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,11 +26,29 @@ export default function AllCompany() {
             .catch(err => console.error("Error fetching companies:", err));
     }, []);
 
+    const displayedCompanies = companies.filter(c => 
+        c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        c.contactNumber?.includes(searchQuery) ||
+        c.address?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div>
-            <div className="page-header">
-                <h1>All Companies</h1>
-                <p>Manage all registered companies.</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                    <h1>All Companies</h1>
+                    <p>Manage all registered companies.</p>
+                </div>
+                <div style={{ minWidth: '250px' }}>
+                    <input 
+                        type="text" 
+                        placeholder="Search companies..." 
+                        className="form-input" 
+                        style={{ margin: 0 }}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </div>
 
             <div className="content-card" style={{ overflowX: 'auto' }}>
@@ -44,7 +63,7 @@ export default function AllCompany() {
                         </tr>
                     </thead>
                     <tbody>
-                        {companies.map(c => (
+                        {displayedCompanies.map(c => (
                             <tr key={c.id}>
                                 <td>{c.name}</td>
                                 <td>{c.contactNumber}</td>
@@ -71,7 +90,7 @@ export default function AllCompany() {
                                 </td>
                             </tr>
                         ))}
-                        {companies.length === 0 && (
+                        {displayedCompanies.length === 0 && (
                             <tr>
                                 <td colSpan="5" style={{ textAlign: 'center', padding: '1rem' }}>No companies found.</td>
                             </tr>

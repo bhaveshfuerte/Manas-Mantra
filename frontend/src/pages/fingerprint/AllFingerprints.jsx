@@ -6,28 +6,37 @@ import { squadaFont } from './font';
 export default function AllFingerprints() {
     const [records, setRecords] = useState([]);
     const [downloadingId, setDownloadingId] = useState(null);
+    const [companies, setCompanies] = useState([]);
+    const [selectedCompanyId, setSelectedCompanyId] = useState('');
+    const [systemUsers, setSystemUsers] = useState([]);
+    const [selectedUserId, setSelectedUserId] = useState('');
+
+    const loggedInUser = (() => {
+        try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
+    })();
 
     useEffect(() => {
-
-        let loggedInUser = {};
-        try {
-            loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
-        } catch (e) {
-            console.error("User object in localStorage is corrupted");
-        }
-
         let url = `/api/fingerprints`;
 
         if (loggedInUser.role === 'Admin' || loggedInUser.role === 'User') {
             url += `?companyId=${loggedInUser.companyId}`;
+        } else if (loggedInUser.role === 'Super Admin') {
+            fetch(`/api/companies`)
+                .then(res => res.json())
+                .then(data => setCompanies(data))
+                .catch(e => console.error(e));
+
+            fetch(`/api/users`)
+                .then(res => res.json())
+                .then(data => setSystemUsers(data))
+                .catch(e => console.error(e));
         }
-        // Super Admins pull all records implicitly
 
         fetch(url)
             .then(res => res.json())
             .then(data => setRecords(data))
             .catch(err => console.error("Error fetching fingerprints", err));
-    }, []);
+    }, [loggedInUser.role, loggedInUser.companyId]);
 
     const getBase64ImageFromUrl = async (imageUrl) => {
         try {
@@ -305,11 +314,47 @@ export default function AllFingerprints() {
         setDownloadingId(null);
     };
 
+    const displayedRecords = records.filter(r => {
+        const matchCompany = selectedCompanyId ? r.companyId === selectedCompanyId : true;
+        const matchUser = selectedUserId ? String(r.userId) === String(selectedUserId) : true;
+        return matchCompany && matchUser;
+    });
+
     return (
         <div style={{ paddingBottom: '2rem' }}>
-            <div className="page-header">
-                <h1>All Fingerprint Records</h1>
-                <p>List of all entered biometric profiles with high-quality PDF exports.</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                    <h1>All Fingerprint Records</h1>
+                    <p>List of all entered biometric profiles with high-quality PDF exports.</p>
+                </div>
+                {loggedInUser.role === 'Super Admin' && (
+                    <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
+                        <select 
+                            className="form-input" 
+                            style={{ margin: 0, minWidth: '200px' }}
+                            value={selectedCompanyId} 
+                            onChange={(e) => setSelectedCompanyId(e.target.value)}
+                            title="Filter by Company"
+                        >
+                            <option value="">All Companies / Branches</option>
+                            {companies.map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                        <select 
+                            className="form-input" 
+                            style={{ margin: 0, minWidth: '200px' }}
+                            value={selectedUserId} 
+                            onChange={(e) => setSelectedUserId(e.target.value)}
+                            title="Filter by System User"
+                        >
+                            <option value="">All System Users</option>
+                            {systemUsers.map(u => (
+                                <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div className="content-card" style={{ overflowX: 'auto' }}>
@@ -325,7 +370,7 @@ export default function AllFingerprints() {
                         </tr>
                     </thead>
                     <tbody>
-                        {records.map(record => (
+                        {displayedRecords.map(record => (
                             <tr key={record.id}>
                                 <td data-label="ID">{record.id.slice(-6)}</td>
                                 <td data-label="Name"><strong>{record.name}</strong></td>
@@ -372,7 +417,7 @@ export default function AllFingerprints() {
                                 </td>
                             </tr>
                         ))}
-                        {records.length === 0 && (
+                        {displayedRecords.length === 0 && (
                             <tr>
                                 <td colSpan="6" style={{ textAlign: 'center', padding: '2rem 1rem' }}>No records found.</td>
                             </tr>
