@@ -28,15 +28,18 @@ export default function AddUser() {
     const [permissions, setPermissions] = useState(editUser?.permissions || []);
     const [companies, setCompanies] = useState([]);
 
-    useEffect(() => {
+    const loggedInUser = (() => {
+        try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
+    })();
 
-        let loggedInUser = {};
-        try {
-            loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
-        } catch (e) {
-            console.error("Corrupted local user");
+    const accessiblePermissions = PERMISSIONS_LIST.filter(mod => {
+        if (mod.id === 'all-company' || mod.id === 'add-user') {
+            return loggedInUser.role === 'Super Admin';
         }
+        return true;
+    });
 
+    useEffect(() => {
         let url = `/api/companies`;
         if (loggedInUser.role === 'Admin' || loggedInUser.role === 'User') {
             url += `?companyId=${loggedInUser.companyId}`;
@@ -52,7 +55,7 @@ export default function AddUser() {
                 }
             })
             .catch(err => console.error("Error fetching companies:", err));
-    }, []);
+    }, [loggedInUser.role, loggedInUser.companyId]);
 
     const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -82,6 +85,15 @@ export default function AddUser() {
             });
 
             if (res.ok) {
+                // Instantly update local storage and reload if editing own profile
+                if (isEditMode && editUser.id === loggedInUser.id) {
+                    const updatedUser = { ...loggedInUser, ...formData, permissions: finalPermissions, logoBase64: formData.logoBase64 };
+                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                    alert(`Your profile was updated successfully!`);
+                    window.location.reload();
+                    return;
+                }
+
                 alert(`User ${formData.name} ${isEditMode ? 'updated' : 'added'} successfully!`);
                 if (isEditMode) {
                     navigate('/company/all-users');
@@ -140,13 +152,31 @@ export default function AddUser() {
                                 </select>
                             </div>
                         )}
+                        {loggedInUser.role === 'Super Admin' && (
+                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                <label>Dashboard & PDF Logo</label>
+                                <input type="file" accept="image/*" className="form-input" onChange={async (e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => setFormData(prev => ({ ...prev, logoBase64: reader.result }));
+                                        reader.readAsDataURL(file);
+                                    }
+                                }} />
+                                {formData.logoBase64 && (
+                                    <div style={{ marginTop: '10px' }}>
+                                        <img src={formData.logoBase64} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {formData.role !== 'Super Admin' && (
                         <div className="form-group" style={{ marginBottom: '2rem' }}>
                             <label style={{ marginBottom: '1rem', display: 'block' }}>Module Access Permissions</label>
                             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                {PERMISSIONS_LIST.map(mod => (
+                                {accessiblePermissions.map(mod => (
                                     <label key={mod.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', backgroundColor: 'var(--card-bg)', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                         <input
                                             type="checkbox"

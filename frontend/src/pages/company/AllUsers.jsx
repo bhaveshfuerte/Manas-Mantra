@@ -62,7 +62,21 @@ export default function AllUsers() {
                                 </td>
                                 <td>{u.companyId || 'N/A (Super)'}</td>
                                 <td>
-                                    {u.permissions?.includes('all') ? 'Full Access' : u.permissions?.join(', ') || 'None'}
+                                    {u.permissions?.includes('all') 
+                                        ? 'Full Access' 
+                                        : (u.permissions?.map(pId => {
+                                            const match = [
+                                                { id: 'dashboard', label: 'Dashboard' },
+                                                { id: 'add-company', label: 'Add Company' },
+                                                { id: 'all-company', label: 'All Companies' },
+                                                { id: 'add-user', label: 'Add Users' },
+                                                { id: 'all-users', label: 'All Users' },
+                                                { id: 'add-fingerprint', label: 'Add Fingerprint' },
+                                                { id: 'all-fingerprints', label: 'All Records' }
+                                            ].find(m => m.id === pId);
+                                            return match ? match.label : pId;
+                                        }).join(', ') || 'None')
+                                    }
                                 </td>
                                 <td>
                                     <button

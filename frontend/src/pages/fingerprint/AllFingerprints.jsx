@@ -127,11 +127,16 @@ export default function AllFingerprints() {
         // Clean, minimalist tech startup Monogram box logo
         doc.roundedRect(16, 16, 22, 22, 3, 3, 'F');
         
-        const initials = compName.split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase() || "BS";
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('SquadaOne', 'normal');
-        doc.setFontSize(22);
-        doc.text(initials, 27, 32, { align: 'center' });
+        const localUser = JSON.parse(localStorage.getItem('user'));
+        if (localUser && localUser.logoBase64) {
+            doc.addImage(localUser.logoBase64, 'JPEG', 16, 16, 22, 22, undefined, 'FAST');
+        } else {
+            const initials = compName.split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase() || "BS";
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('SquadaOne', 'normal');
+            doc.setFontSize(22);
+            doc.text(initials, 27, 32, { align: 'center' });
+        }
 
         // 4. Company Name
         doc.setTextColor(89, 74, 59); // Dark Brown

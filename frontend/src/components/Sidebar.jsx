@@ -23,7 +23,11 @@ export default function Sidebar({ onClose }) {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="sidebar-header">
                 <h2>
-                    <Fingerprint className="text-primary" />
+                    {user?.logoBase64 ? (
+                        <img src={user.logoBase64} alt="Company Logo" style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px' }} />
+                    ) : (
+                        <Fingerprint className="text-primary" />
+                    )}
                     ScannerApp
                 </h2>
             </div>
