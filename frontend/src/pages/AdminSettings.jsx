@@ -3,39 +3,37 @@ import React, { useState, useEffect } from 'react';
 export default function AdminSettings() {
     const [companyDetails, setCompanyDetails] = useState({ id: '', name: '', contactNumber: '', address: '', status: 'Active' });
     const [isLoading, setIsLoading] = useState(true);
-    const [isRestricted, setIsRestricted] = useState(false);
+    const [companies, setCompanies] = useState([]);
+    
+    // Check logged in user synchronously for render checks
+    const loggedInUser = (() => {
+        try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
+    })();
 
     useEffect(() => {
-        let loggedInUser = {};
-        try {
-            loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
-        } catch (e) {
-            console.error("Corrupted local user");
+        let url = `/api/companies`;
+        if (loggedInUser.role === 'Admin' || loggedInUser.role === 'User') {
+            if (!loggedInUser.companyId || loggedInUser.companyId === 'all') {
+                setIsLoading(false);
+                return;
+            }
+            url += `?companyId=${loggedInUser.companyId}`;
         }
 
-        if (loggedInUser.role === 'Super Admin') {
-            setIsRestricted(true);
-            setIsLoading(false);
-            return;
-        }
-
-        if (loggedInUser.companyId && loggedInUser.companyId !== 'all') {
-            fetch(`/api/companies?companyId=${loggedInUser.companyId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        setCompanyDetails(data[0]);
-                    }
-                    setIsLoading(false);
-                })
-                .catch(err => {
-                    console.error("Error fetching company", err);
-                    setIsLoading(false);
-                });
-        } else {
-            setIsLoading(false);
-        }
-    }, []);
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    setCompanies(data);
+                    setCompanyDetails(data[0]); // default to first company
+                }
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error("Error fetching company", err);
+                setIsLoading(false);
+            });
+    }, [loggedInUser.role, loggedInUser.companyId]);
 
     const handleChange = (e) => setCompanyDetails(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -60,16 +58,7 @@ export default function AdminSettings() {
 
     if (isLoading) return <div style={{ padding: '2rem' }}>Loading Admin Settings...</div>;
 
-    if (isRestricted) {
-        return (
-            <div style={{ padding: '2rem' }}>
-                <div className="page-header">
-                    <h1>Admin Settings Restricted</h1>
-                    <p>As a Super Admin, please use the <b>All Company</b> page to manage and edit specific companies. Only a Company Admin can edit their own company's details here.</p>
-                </div>
-            </div>
-        );
-    }
+    // Removed restricted block, Super Admins can now edit directly
 
     if (!companyDetails.id) {
         return (
@@ -90,6 +79,23 @@ export default function AdminSettings() {
             </div>
 
             <div className="content-card" style={{ maxWidth: '600px' }}>
+                {loggedInUser.role === 'Super Admin' && companies.length > 1 && (
+                    <div className="form-group" style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                        <label>Select Company to Edit</label>
+                        <select 
+                            className="form-input"
+                            value={companyDetails.id}
+                            onChange={(e) => {
+                                const selected = companies.find(c => c.id === e.target.value);
+                                if (selected) setCompanyDetails(selected);
+                            }}
+                        >
+                            {companies.map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Company Name</label>
