@@ -148,38 +148,43 @@ app.get('/api/users', (req, res) => {
 
 // Real Fingerprint API
 app.post('/api/fingerprints', (req, res) => {
-    const { name, age, study, fatherName, contactDetails, photos, userId, companyId } = req.body;
+    try {
+        const { name, age, study, fatherName, contactDetails, photos, userId, companyId } = req.body;
 
-    const recordId = Date.now().toString();
-    const dirPath = path.join(__dirname, 'uploads', 'fingerprints', name.replace(/\s+/g, '_') + '_' + recordId);
+        const recordId = Date.now().toString();
+        const dirPath = path.join(__dirname, 'uploads', 'fingerprints', name.replace(/\s+/g, '_') + '_' + recordId);
 
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+        }
+
+        const collectionFileName = 'collection.json';
+        let photosUrl = null;
+
+        if (photos && typeof photos === 'object') {
+            const collectionPath = path.join(dirPath, collectionFileName);
+            // Save all 30 uncompressed photos into a single JSON "collection" to bypass slow network loading!
+            fs.writeFileSync(collectionPath, JSON.stringify(photos));
+            photosUrl = `/uploads/fingerprints/${name.replace(/\s+/g, '_')}_${recordId}/${collectionFileName}`;
+        }
+
+        const fp = {
+            id: recordId,
+            userId: userId || 'anonymous',
+            companyId: companyId || 'unassigned',
+            name, age, study, fatherName, contactDetails,
+            photosUrl: photosUrl,
+            photos: {}, // Retained empty for backwards compatibility shape
+            scannedAt: new Date()
+        };
+
+        db.fingerprints.push(fp);
+        saveDb();
+        res.status(201).json({ message: 'Fingerprints record added successfully', fingerprint: fp });
+    } catch (error) {
+        console.error("FATAL FINGERPRINT POST ERROR:", error);
+        res.status(500).json({ message: error.message, stack: error.stack });
     }
-
-    const collectionFileName = 'collection.json';
-    let photosUrl = null;
-
-    if (photos && typeof photos === 'object') {
-        const collectionPath = path.join(dirPath, collectionFileName);
-        // Save all 30 uncompressed photos into a single JSON "collection" to bypass slow network loading!
-        fs.writeFileSync(collectionPath, JSON.stringify(photos));
-        photosUrl = `/uploads/fingerprints/${name.replace(/\s+/g, '_')}_${recordId}/${collectionFileName}`;
-    }
-
-    const fp = {
-        id: recordId,
-        userId: userId || 'anonymous',
-        companyId: companyId || 'unassigned',
-        name, age, study, fatherName, contactDetails,
-        photosUrl: photosUrl,
-        photos: {}, // Retained empty for backwards compatibility shape
-        scannedAt: new Date()
-    };
-
-    db.fingerprints.push(fp);
-    saveDb();
-    res.status(201).json({ message: 'Fingerprints record added successfully', fingerprint: fp });
 });
 
 app.get('/api/fingerprints', (req, res) => {

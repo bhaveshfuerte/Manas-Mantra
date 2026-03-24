@@ -4,7 +4,7 @@ export default function AdminSettings() {
     const [companyDetails, setCompanyDetails] = useState({ id: '', name: '', contactNumber: '', address: '', status: 'Active' });
     const [isLoading, setIsLoading] = useState(true);
     const [companies, setCompanies] = useState([]);
-    
+
     // Check logged in user synchronously for render checks
     const loggedInUser = (() => {
         try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
@@ -82,7 +82,7 @@ export default function AdminSettings() {
                 {loggedInUser.role === 'Super Admin' && companies.length > 1 && (
                     <div className="form-group" style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
                         <label>Select Company to Edit</label>
-                        <select 
+                        <select
                             className="form-input"
                             value={companyDetails.id}
                             onChange={(e) => {

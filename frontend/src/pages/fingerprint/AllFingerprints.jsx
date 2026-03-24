@@ -66,16 +66,17 @@ export default function AllFingerprints() {
         setDownloadingId(record.id);
 
         let photosData = record.photos || {};
-        if (record.photosUrl) {
-            try {
-                const res = await fetch(record.photosUrl);
-                if (res.ok) {
-                    photosData = await res.json();
+        try {
+            if (record.photosUrl) {
+                try {
+                    const res = await fetch(record.photosUrl);
+                    if (res.ok) {
+                        photosData = await res.json();
+                    }
+                } catch (err) {
+                    console.error("Failed to load photo collection", err);
                 }
-            } catch (err) {
-                console.error("Failed to load photo collection", err);
             }
-        }
 
         let compName = "Biometric Solutions";
         let compContact = "123-456-7890";
@@ -106,6 +107,14 @@ export default function AllFingerprints() {
             }
         } catch(e) {}
 
+        let logoObj = null;
+        try {
+            const localUser = JSON.parse(localStorage.getItem('user'));
+            if (localUser && localUser.logoBase64) {
+                logoObj = await getImageMetadata(localUser.logoBase64);
+            }
+        } catch (e) {}
+
         const doc = new jsPDF({ format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
@@ -125,26 +134,51 @@ export default function AllFingerprints() {
         doc.line(-20, 50, pageWidth - 50, pageHeight + 20);
 
         // 3. Header Logo (Top Left)
-        doc.setFillColor(114, 98, 85);
-        // Clean, minimalist tech startup Monogram box logo
-        doc.roundedRect(16, 16, 22, 22, 3, 3, 'F');
+        let didDrawLogo = false;
+        let actualLogoWidth = 22; // Default width of the classic initials box
+
+        if (logoObj) {
+            let logoMaxWidth = 45;
+            let logoMaxHeight = 25;
+            let renderW = logoMaxWidth;
+            let renderH = renderW * (logoObj.height / logoObj.width);
+            if (renderH > logoMaxHeight) {
+                renderH = logoMaxHeight;
+                renderW = renderH * (logoObj.width / logoObj.height);
+            }
+            
+            actualLogoWidth = renderW; // Store mathematically exact drawn width!
+
+            let logoFormat = 'JPEG';
+            const logLw = logoObj.dataUrl.toLowerCase();
+            if (logLw.includes('image/png')) logoFormat = 'PNG';
+            else if (logLw.includes('image/webp')) logoFormat = 'WEBP';
+
+            try {
+                doc.addImage(logoObj.dataUrl, logoFormat, 16, 16, renderW, renderH, undefined, 'FAST');
+                didDrawLogo = true;
+            } catch (err) {
+                console.error("Failed to render custom logo:", err);
+            }
+        } 
         
-        const localUser = JSON.parse(localStorage.getItem('user'));
-        if (localUser && localUser.logoBase64) {
-            doc.addImage(localUser.logoBase64, 'JPEG', 16, 16, 22, 22, undefined, 'FAST');
-        } else {
+        if (!didDrawLogo) {
+            doc.setFillColor(114, 98, 85);
+            doc.roundedRect(16, 16, 22, 22, 3, 3, 'F');
             const initials = compName.split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase() || "BS";
             doc.setTextColor(255, 255, 255);
             doc.setFont('SquadaOne', 'normal');
             doc.setFontSize(22);
             doc.text(initials, 27, 32, { align: 'center' });
+            actualLogoWidth = 22;
         }
 
         // 4. Company Name
         doc.setTextColor(89, 74, 59); // Dark Brown
-        doc.setFontSize(32);
-        // Truncate to avoid overlapping contact details
-        doc.text(compName.substring(0, 30), 45, 33);
+        doc.setFontSize(22); // Reduced from 32 to prevent overlaying the right-side contact block
+        // Logo starts at X=16. Add the exact width of the logo, plus 8mm of clean whitespace padding!
+        const nameX = 16 + actualLogoWidth + 8;
+        doc.text(compName.substring(0, 30), nameX, 33);
 
         // 5. Contact Details (Top Right)
         doc.setFont('helvetica', 'normal');
@@ -176,7 +210,7 @@ export default function AllFingerprints() {
         doc.triangle(iconX + 0.9, 30.5, iconX + 4.1, 30.5, iconX + 2.5, 34, 'F');
         doc.setFillColor(255, 255, 255);
         doc.circle(iconX + 2.5, 30.5, 0.7, 'F');
-        doc.text(compAddress.substring(0, 45), iconX + 7, 33);
+        doc.text(compAddress.substring(0, 40), iconX + 7, 33);
 
         // 6. Section Ribbon "FINGER PRINT DATA"
         const ribbonColor = '#8c7d6e'; // Mid-brown
@@ -213,20 +247,55 @@ export default function AllFingerprints() {
         doc.setLineWidth(1);
         doc.line(20, detailsY + 48, pageWidth - 20, detailsY + 48);
 
-        let currentY = detailsY + 60;
+        let currentY = detailsY + 54;
         const fingers = [
             'Left_Little', 'Left_Ring', 'Left_Middle', 'Left_Index', 'Left_Thumb',
             'Right_Thumb', 'Right_Index', 'Right_Middle', 'Right_Ring', 'Right_Little'
         ];
 
+        const drawPosition = async (sourceContent, positionInfo, xOffset, imgRowY) => {
+            if (!sourceContent) return;
+            let imgObj = null;
+
+            if (sourceContent.startsWith('/uploads') || sourceContent.startsWith('http')) {
+                imgObj = await getBase64ImageFromUrl(sourceContent);
+            } else if (sourceContent.startsWith('data:image')) {
+                imgObj = await getImageMetadata(sourceContent);
+            }
+
+            if (imgObj) {
+                const cellWidth = 60;
+                const fixedWidth = 50; 
+                const fixedHeight = 65; 
+                const startX = 14;
+                const finalX = startX + xOffset + ((cellWidth - fixedWidth) / 2);
+                
+                let format = 'JPEG';
+                const lowerUrl = imgObj.dataUrl.toLowerCase();
+                if (lowerUrl.includes('image/png')) format = 'PNG';
+                else if (lowerUrl.includes('image/webp')) format = 'WEBP';
+                
+                try {
+                    doc.addImage(imgObj.dataUrl, format, finalX, imgRowY, fixedWidth, fixedHeight, undefined, 'FAST');
+                } catch(imgErr) {
+                    console.error("Failed to inject image into PDF stream:", imgErr);
+                }
+                
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.5);
+                doc.rect(finalX, imgRowY, fixedWidth, fixedHeight); 
+
+                doc.setFontSize(10);
+                doc.text(positionInfo, startX + xOffset + (cellWidth / 2), imgRowY + fixedHeight + 6, { align: "center" });
+            }
+        };
+
         for (const finger of fingers) {
             const p = photosData[finger] || {};
 
             if (p.Left || p.Center || p.Right) {
-                // Add new page if Y is getting too low
-                if (currentY > pageHeight - 50) {
+                if (currentY > pageHeight - 100) {
                     doc.addPage();
-                    // Redraw background & footer on sequence pages
                     doc.setFillColor(248, 244, 240);
                     doc.rect(0, 0, pageWidth, pageHeight, 'F');
                     currentY = 20;
@@ -237,50 +306,13 @@ export default function AllFingerprints() {
                 doc.text(finger.replace('_', ' '), 14, currentY);
                 doc.setFont("helvetica", "normal");
 
-                currentY += 8; // Move down for images
+                const imgRowY = currentY + 8;
 
-                let startX = 14;
-                const cellWidth = 55;
-                const maxWidth = 55;
-                const maxHeight = 70;
-                let maxRowHeightUsed = 0;
+                if (p.Left) await drawPosition(p.Left, "Left Position", 0, imgRowY);
+                if (p.Center) await drawPosition(p.Center, "Center Position", 60, imgRowY);
+                if (p.Right) await drawPosition(p.Right, "Right Position", 120, imgRowY);
 
-                const drawPosition = async (sourceContent, positionInfo, xOffset) => {
-                    if (!sourceContent) return;
-                    let imgObj = null;
-
-                    if (sourceContent.startsWith('/uploads') || sourceContent.startsWith('http')) {
-                        imgObj = await getBase64ImageFromUrl(sourceContent);
-                    } else if (sourceContent.startsWith('data:image')) {
-                        imgObj = await getImageMetadata(sourceContent);
-                    }
-
-                    if (imgObj) {
-                        let renderWidth = maxWidth;
-                        let renderHeight = renderWidth * (imgObj.height / imgObj.width);
-
-                        // Limit height to maxHeight to prevent page overflow
-                        if (renderHeight > maxHeight) {
-                            renderHeight = maxHeight;
-                            renderWidth = renderHeight * (imgObj.width / imgObj.height);
-                        }
-
-                        const finalX = startX + xOffset + ((cellWidth - renderWidth) / 2);
-                        doc.addImage(imgObj.dataUrl, 'JPEG', finalX, currentY, renderWidth, renderHeight, undefined, 'NONE');
-
-                        doc.setFontSize(10);
-                        doc.text(positionInfo, startX + xOffset + (cellWidth / 2), currentY + renderHeight + 6, { align: "center" });
-
-                        if (renderHeight > maxRowHeightUsed) maxRowHeightUsed = renderHeight;
-                    }
-                };
-
-                if (p.Left) await drawPosition(p.Left, "Left Position", 0);
-                if (p.Center) await drawPosition(p.Center, "Center Position", 60);
-                if (p.Right) await drawPosition(p.Right, "Right Position", 120);
-
-                if (maxRowHeightUsed === 0) maxRowHeightUsed = 40;
-                currentY += maxRowHeightUsed + 16;
+                currentY += 65 + 16;
             }
         }
 
@@ -288,23 +320,43 @@ export default function AllFingerprints() {
         const pages = doc.internal.getNumberOfPages();
         for (let j = 1; j <= pages; j++) {
             doc.setPage(j);
-            // Footer shadow background line
+            
+            // Minimalist Divider Line
             doc.setDrawColor(214, 203, 193);
-            doc.setLineWidth(6);
-            doc.line(0, pageHeight, pageWidth, pageHeight);
+            doc.setLineWidth(0.5);
+            doc.line(15, pageHeight - 25, pageWidth - 15, pageHeight - 25);
 
-            doc.setFontSize(12);
+            // Left side: Company Details & Page Numbers
+            doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(89, 74, 59);
-            doc.text(compName.toUpperCase(), pageWidth / 2, pageHeight - 15, { align: "center" });
-            doc.setFontSize(10);
+            doc.text(compName.toUpperCase(), 15, pageHeight - 17);
+            
+            doc.setFontSize(8);
             doc.setFont('helvetica', 'normal');
+            doc.setTextColor(120, 120, 120);
+            doc.text("Generated by Secured Biometric System", 15, pageHeight - 12);
+            doc.text(`Page ${j} of ${pages}`, 15, pageHeight - 7);
+
+            // Right side: Official Signature Line
+            doc.setDrawColor(89, 74, 59);
+            doc.setLineWidth(0.5);
+            // Draw a 50mm wide line for the signature
+            doc.line(pageWidth - 65, pageHeight - 13, pageWidth - 15, pageHeight - 13); 
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'italic');
             doc.setTextColor(100, 100, 100);
-            doc.text("Authorized Signature", pageWidth / 2, pageHeight - 10, { align: "center" });
+            doc.text("Authorized Signature", pageWidth - 40, pageHeight - 8, { align: "center" });
         }
 
         doc.save(`${record.name}_Fingerprint_Record.pdf`);
-        setDownloadingId(null);
+        } catch (fatalErr) {
+            console.error("CRITICAL PDF GENERATION FAILURE:", fatalErr);
+            alert("Error downloading PDF: The data contains an invalid or corrupted file format. Please clear the record and retake it.");
+        } finally {
+            setDownloadingId(null);
+        }
     };
 
     const displayedRecords = searchName

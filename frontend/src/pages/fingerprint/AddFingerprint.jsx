@@ -115,8 +115,11 @@ export default function AddFingerprint() {
         setIsCompressing(true);
 
         try {
-            // Read the exact, raw, uncompressed original file from the phone to guarantee maximum native clarity
+            // Compress the massive phone photo to max 1500px to ensure the payload is small enough to upload quickly over mobile networks,
+            // while remaining more than perfectly sharp for the tiny A4 PDF box!
+            const reducedBlob = await reduce.toBlob(file, { max: 1500 });
             const reader = new FileReader();
+
             reader.onloadend = () => {
                 setPhotos(prev => {
                     const updated = {
@@ -129,7 +132,7 @@ export default function AddFingerprint() {
                 e.target.value = ''; // Reset input to allow recapturing
                 setIsCompressing(false);
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(reducedBlob);
         } catch (err) {
             console.error("File read failed:", err);
             setIsCompressing(false);

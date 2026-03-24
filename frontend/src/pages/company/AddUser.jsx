@@ -152,7 +152,7 @@ export default function AddUser() {
                                 </select>
                             </div>
                         )}
-                        {loggedInUser.role === 'Super Admin' && (
+                        {loggedInUser.role === 'Super Admin' && formData.role === 'Super Admin' && (
                             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                                 <label>Dashboard & PDF Logo</label>
                                 <input type="file" accept="image/*" className="form-input" onChange={async (e) => {
