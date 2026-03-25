@@ -82,10 +82,12 @@ export default function Sidebar({ onClose }) {
                     </>
                 )}
 
-                <Link to="/admin" className={`menu-item ${isActive('/admin') ? 'active' : ''}`}>
-                    <Settings size={20} />
-                    Admin Settings
-                </Link>
+                {user?.role === 'Super Admin' && (
+                    <Link to="/admin" className={`menu-item ${isActive('/admin') ? 'active' : ''}`}>
+                        <Settings size={20} />
+                        Super Admin Settings
+                    </Link>
+                )}
             </nav>
 
             <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>

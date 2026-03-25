@@ -58,7 +58,16 @@ export default function AdminSettings() {
 
     if (isLoading) return <div style={{ padding: '2rem' }}>Loading Admin Settings...</div>;
 
-    // Removed restricted block, Super Admins can now edit directly
+    if (loggedInUser.role !== 'Super Admin') {
+        return (
+            <div style={{ padding: '2rem' }}>
+                <div className="page-header">
+                    <h1>Access Denied</h1>
+                    <p>Only the System Super Admin has the required clearance to modify core company root settings.</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!companyDetails.id) {
         return (
