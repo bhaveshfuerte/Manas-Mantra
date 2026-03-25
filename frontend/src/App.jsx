@@ -13,6 +13,14 @@ import AllFingerprints from './pages/fingerprint/AllFingerprints';
 import ViewFingerprint from './pages/fingerprint/ViewFingerprint';
 import AdminSettings from './pages/AdminSettings';
 
+// Security Protocol: Force an absolute logout if the browser tab/app is completely closed and reopened.
+// This prevents persistent tokens from automatically logging the next user into the dashboard.
+if (!sessionStorage.getItem('session_active')) {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  sessionStorage.setItem('session_active', '1');
+}
+
 function App() {
   return (
     <Router>
