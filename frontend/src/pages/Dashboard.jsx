@@ -31,7 +31,6 @@ export default function Dashboard() {
 
                 const todayStr = new Date().toDateString();
                 const scansTodayCount = (Array.isArray(resF) ? resF : []).filter(f => new Date(f.scannedAt).toDateString() === todayStr).length;
-
                 setStats({
                     users: Array.isArray(resU) ? resU.length : 0,
                     companies: Array.isArray(resC) ? resC.length : 0,

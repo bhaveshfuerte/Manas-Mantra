@@ -34,7 +34,17 @@
       "id": "1773835569206",
       "name": "tirth",
       "email": "tirth@gmail.com",
-      "password": "Tirth@123"
+      "password": "Tirth@123",
+      "role": "Admin",
+      "companyId": "1773207836674",
+      "permissions": [
+        "dashboard",
+        "add-company",
+        "all-company",
+        "add-user",
+        "all-users",
+        "add-fingerprint"
+      ]
     },
     {
       "id": "1774003685013",
