@@ -11,15 +11,8 @@ import AllUsers from './pages/company/AllUsers';
 import AddFingerprint from './pages/fingerprint/AddFingerprint';
 import AllFingerprints from './pages/fingerprint/AllFingerprints';
 import ViewFingerprint from './pages/fingerprint/ViewFingerprint';
+import EditFingerprint from './pages/fingerprint/EditFingerprint';
 import AdminSettings from './pages/AdminSettings';
-
-// Security Protocol: Force an absolute logout if the browser tab/app is completely closed and reopened.
-// This prevents persistent tokens from automatically logging the next user into the dashboard.
-if (!sessionStorage.getItem('session_active')) {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  sessionStorage.setItem('session_active', '1');
-}
 
 function App() {
   return (
@@ -41,6 +34,7 @@ function App() {
           <Route path="fingerprint/add" element={<AddFingerprint />} />
           <Route path="fingerprint/all" element={<AllFingerprints />} />
           <Route path="fingerprint/view/:id" element={<ViewFingerprint />} />
+          <Route path="fingerprint/edit/:id" element={<EditFingerprint />} />
           <Route path="admin" element={<AdminSettings />} />
         </Route>
 

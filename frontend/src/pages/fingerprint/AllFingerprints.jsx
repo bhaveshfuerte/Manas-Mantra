@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
-import { Download, Loader2, Eye } from 'lucide-react';
+import { Download, Loader2, Eye, Pencil, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { squadaFont } from './font';
 
 export default function AllFingerprints() {
@@ -8,28 +9,48 @@ export default function AllFingerprints() {
     const [downloadingId, setDownloadingId] = useState(null);
     const [companies, setCompanies] = useState([]);
     const [searchName, setSearchName] = useState('');
+    const navigate = useNavigate();
+
+    const fetchRecords = () => {
+        let url = `/api/fingerprints`;
+        if (loggedInUser.role === 'Admin' || loggedInUser.role === 'User') {
+            url += `?companyId=${loggedInUser.companyId}`;
+        }
+        fetch(url)
+            .then(res => res.json())
+            .then(data => setRecords(data))
+            .catch(err => console.error("Error fetching fingerprints", err));
+    };
 
     const loggedInUser = (() => {
         try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
     })();
 
     useEffect(() => {
-        let url = `/api/fingerprints`;
-
-        if (loggedInUser.role === 'Admin' || loggedInUser.role === 'User') {
-            url += `?companyId=${loggedInUser.companyId}`;
-        } else if (loggedInUser.role === 'Super Admin') {
+        if (loggedInUser.role === 'Super Admin') {
             fetch(`/api/companies`)
                 .then(res => res.json())
                 .then(data => setCompanies(data))
                 .catch(e => console.error(e));
         }
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => setRecords(data))
-            .catch(err => console.error("Error fetching fingerprints", err));
+        fetchRecords();
     }, [loggedInUser.role, loggedInUser.companyId]);
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this fingerprint record? This will also remove all associated images permanently.")) return;
+        try {
+            const res = await fetch(`/api/fingerprints/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert("Record deleted successfully");
+                fetchRecords();
+            } else {
+                alert("Failed to delete record");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error connecting to server");
+        }
+    };
 
     const getBase64ImageFromUrl = async (imageUrl) => {
         try {
@@ -410,41 +431,77 @@ export default function AllFingerprints() {
                                 <td data-label="Age">{record.age || '-'}</td>
                                 <td data-label="Contact">{record.contactDetails || '-'}</td>
                                 <td data-label="Scan Date">{new Date(record.scannedAt).toLocaleDateString()}</td>
-                                <td data-label="Actions" style={{ display: 'flex', gap: '8px' }}>
+                                <td data-label="Actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                     <button
                                         onClick={() => window.open(`/fingerprint/view/${record.id}`, '_blank')}
                                         className="btn-primary"
                                         style={{
-                                            padding: '0.4rem 0.8rem',
-                                            fontSize: '0.8rem',
+                                            padding: '0.4rem 0.6rem',
+                                            fontSize: '0.75rem',
                                             width: 'auto',
                                             display: 'flex',
                                             gap: '4px',
                                             alignItems: 'center',
-                                            backgroundColor: '#e2e8f0',
-                                            color: '#1e293b'
+                                            backgroundColor: '#f1f5f9',
+                                            color: '#475569'
                                         }}
+                                        title="View Record"
                                     >
-                                        <Eye size={14} /> View
+                                        <Eye size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/fingerprint/edit/${record.id}`)}
+                                        className="btn-primary"
+                                        style={{
+                                            padding: '0.4rem 0.6rem',
+                                            fontSize: '0.75rem',
+                                            width: 'auto',
+                                            display: 'flex',
+                                            gap: '4px',
+                                            alignItems: 'center',
+                                            backgroundColor: '#fef9c3',
+                                            color: '#854d0e'
+                                        }}
+                                        title="Edit Record"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(record.id)}
+                                        className="btn-primary"
+                                        style={{
+                                            padding: '0.4rem 0.6rem',
+                                            fontSize: '0.75rem',
+                                            width: 'auto',
+                                            display: 'flex',
+                                            gap: '4px',
+                                            alignItems: 'center',
+                                            backgroundColor: '#fee2e2',
+                                            color: '#991b1b'
+                                        }}
+                                        title="Delete Record"
+                                    >
+                                        <Trash2 size={14} />
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPDF(record)}
                                         disabled={downloadingId === record.id}
                                         className="btn-primary"
                                         style={{
-                                            padding: '0.4rem 0.8rem',
-                                            fontSize: '0.8rem',
+                                            padding: '0.4rem 0.6rem',
+                                            fontSize: '0.75rem',
                                             width: 'auto',
                                             display: 'flex',
                                             gap: '4px',
                                             alignItems: 'center',
                                             opacity: downloadingId === record.id ? 0.7 : 1
                                         }}
+                                        title="Download PDF"
                                     >
                                         {downloadingId === record.id ? (
-                                            <><Loader2 size={14} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Generating...</>
+                                            <><Loader2 size={12} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /></>
                                         ) : (
-                                            <><Download size={14} /> Download</>
+                                            <><Download size={14} /></>
                                         )}
                                     </button>
                                 </td>

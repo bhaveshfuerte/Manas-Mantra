@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Eye, User, FileText, Calendar, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
     const [stats, setStats] = useState({ users: 0, companies: 0, scansToday: 0 });
     const [recentScans, setRecentScans] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -79,30 +82,91 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <div className="content-card" style={{ overflowX: 'auto' }}>
-                        <h3 style={{ marginBottom: '1.5rem' }}>Recent Scans</h3>
+                    <div className="content-card" style={{ overflowX: 'auto', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <FileText size={20} color="var(--primary-color)" /> Recent Scans
+                            </h3>
+                            <button 
+                                onClick={() => navigate('/fingerprint/all')}
+                                style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                                View All <ChevronRight size={16} />
+                            </button>
+                        </div>
                         <table className="data-table">
                             <thead>
-                                <tr>
-                                    <th>ID Sequence</th>
-                                    <th>Citizen Name</th>
-                                    <th>Date Scanned</th>
+                                <tr style={{ backgroundColor: '#f8fafc' }}>
+                                    <th style={{ padding: '1rem' }}>Candidate</th>
+                                    <th>Study / Occupation</th>
+                                    <th>Date & Time</th>
                                     <th>Status</th>
+                                    <th style={{ textAlign: 'right' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recentScans.length > 0 ? (
                                     recentScans.map(scan => (
-                                        <tr key={scan.id}>
-                                            <td data-label="ID Sequence">#{scan.id.slice(-4)}</td>
-                                            <td data-label="Citizen Name"><strong>{scan.name}</strong></td>
-                                            <td data-label="Date Scanned">{new Date(scan.scannedAt).toLocaleDateString()} at {new Date(scan.scannedAt).toLocaleTimeString()}</td>
-                                            <td data-label="Status"><span style={{ color: 'var(--success)' }}>Captured</span></td>
+                                        <tr key={scan.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                            <td data-label="Candidate" style={{ padding: '0.8rem 1rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <User size={18} color="#64748b" />
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{scan.name}</div>
+                                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>#{scan.id.slice(-6)}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="Study / Occupation">
+                                                <div style={{ color: '#475569', fontSize: '0.9rem' }}>{scan.study || 'N/A'}</div>
+                                            </td>
+                                            <td data-label="Date & Time">
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '0.9rem' }}>
+                                                    <Calendar size={14} />
+                                                    {new Date(scan.scannedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                                                    <span style={{ color: '#94a3b8' }}>•</span>
+                                                    {new Date(scan.scannedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </td>
+                                            <td data-label="Status">
+                                                <span style={{ 
+                                                    padding: '4px 10px', 
+                                                    borderRadius: '20px', 
+                                                    fontSize: '0.7rem', 
+                                                    fontWeight: 700, 
+                                                    textTransform: 'uppercase',
+                                                    backgroundColor: '#dcfce7',
+                                                    color: '#166534'
+                                                }}>
+                                                    Verified
+                                                </span>
+                                            </td>
+                                            <td data-label="Actions" style={{ textAlign: 'right' }}>
+                                                <button
+                                                    onClick={() => window.open(`/fingerprint/view/${scan.id}`, '_blank')}
+                                                    style={{ 
+                                                        padding: '6px', 
+                                                        borderRadius: '6px', 
+                                                        backgroundColor: '#f1f5f9', 
+                                                        border: 'none', 
+                                                        color: '#64748b',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    title="View Profile"
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem' }}>No recent scans found for your branch.</td>
+                                        <td colSpan="5" style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                                            <div style={{ marginBottom: '0.5rem' }}><FileText size={32} opacity={0.3} style={{ margin: '0 auto' }} /></div>
+                                            No recent activity detected.
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
