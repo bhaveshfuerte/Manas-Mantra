@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
 
 export default function AdminSettings() {
-    const [companyDetails, setCompanyDetails] = useState({ id: '', name: '', contactNumber: '', address: '', status: 'Active' });
+    const [companyDetails, setCompanyDetails] = useState({ id: '', name: '', contactNumber: '', address: '', status: 'Active', logoBase64: '' });
     const [isLoading, setIsLoading] = useState(true);
     const [companies, setCompanies] = useState([]);
+    const fileInputRef = useRef(null);
 
     // Check logged in user synchronously for render checks
     const loggedInUser = (() => {
@@ -36,6 +38,22 @@ export default function AdminSettings() {
     }, [loggedInUser.role, loggedInUser.companyId]);
 
     const handleChange = (e) => setCompanyDetails(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setCompanyDetails(prev => ({ ...prev, logoBase64: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeLogo = () => {
+        setCompanyDetails(prev => ({ ...prev, logoBase64: '' }));
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -106,6 +124,57 @@ export default function AdminSettings() {
                     </div>
                 )}
                 <form onSubmit={handleSubmit}>
+                    <div className="form-group" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                        <label style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>Company Logo</label>
+                        <div 
+                            style={{ 
+                                width: '150px', 
+                                height: '150px', 
+                                border: '2px dashed #cbd5e1', 
+                                borderRadius: '12px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                backgroundColor: '#f8fafc'
+                            }}
+                        >
+                            {companyDetails.logoBase64 ? (
+                                <>
+                                    <img src={companyDetails.logoBase64} alt="Company Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <button 
+                                        type="button"
+                                        onClick={removeLogo}
+                                        style={{ position: 'absolute', top: '5px', right: '5px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </>
+                            ) : (
+                                <div onClick={() => fileInputRef.current.click()} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#64748b' }}>
+                                    <ImageIcon size={32} style={{ marginBottom: '8px' }} />
+                                    <span style={{ fontSize: '0.8rem' }}>Upload Logo</span>
+                                </div>
+                            )}
+                        </div>
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            style={{ display: 'none' }} 
+                            accept="image/*" 
+                            onChange={handleLogoChange} 
+                        />
+                        <button 
+                            type="button" 
+                            className="btn-secondary" 
+                            style={{ marginTop: '1rem', width: 'auto', padding: '0.4rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            onClick={() => fileInputRef.current.click()}
+                        >
+                            <Upload size={14} /> Change Logo
+                        </button>
+                    </div>
+
                     <div className="form-group">
                         <label>Company Name</label>
                         <input type="text" name="name" className="form-input" value={companyDetails.name} onChange={handleChange} required />
