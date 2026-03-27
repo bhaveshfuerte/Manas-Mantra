@@ -426,49 +426,60 @@ export default function AllFingerprints() {
                     <tbody>
                         {displayedRecords.map(record => (
                             <tr key={record.id}>
-                                <td data-label="ID">{record.id.slice(-6)}</td>
-                                <td data-label="Name"><strong>{record.name}</strong></td>
-                                <td data-label="Age">{record.age || '-'}</td>
-                                <td data-label="Contact">{record.contactDetails || '-'}</td>
-                                <td data-label="Scan Date">{new Date(record.scannedAt).toLocaleDateString()}</td>
-                                <td data-label="Actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                    <button
-                                        onClick={() => window.open(`/fingerprint/view/${record.id}`, '_blank')}
-                                        className="btn-primary"
-                                        style={{
-                                            padding: '0.4rem 0.6rem',
-                                            fontSize: '0.75rem',
-                                            width: 'auto',
-                                            display: 'flex',
-                                            gap: '4px',
-                                            alignItems: 'center',
-                                            backgroundColor: '#f1f5f9',
-                                            color: '#475569'
-                                        }}
-                                        title="View Record"
-                                    >
-                                        <Eye size={14} />
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/fingerprint/edit/${record.id}`)}
-                                        className="btn-primary"
-                                        style={{
-                                            padding: '0.4rem 0.6rem',
-                                            fontSize: '0.75rem',
-                                            width: 'auto',
-                                            display: 'flex',
-                                            gap: '4px',
-                                            alignItems: 'center',
-                                            backgroundColor: '#fef9c3',
-                                            color: '#854d0e'
-                                        }}
-                                        title="Edit Record"
-                                    >
-                                        <Pencil size={14} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(record.id)}
-                                        className="btn-primary"
+                                <td data-label="ID">
+                                    <div style={{ fontWeight: 600 }}>#{record.id.slice(-6)}</div>
+                                </td>
+                                <td data-label="Name">
+                                    <div style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{record.name}</div>
+                                </td>
+                                <td data-label="Age">
+                                    <div>{record.age || '-'}</div>
+                                </td>
+                                <td data-label="Contact">
+                                    <div style={{ fontSize: '0.85rem' }}>{record.contactDetails || '-'}</div>
+                                </td>
+                                <td data-label="Scan Date">
+                                    <div style={{ fontSize: '0.85rem' }}>{new Date(record.scannedAt).toLocaleDateString()}</div>
+                                </td>
+                                <td data-label="Actions">
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
+                                        <button
+                                            onClick={() => window.open(`/fingerprint/view/${record.id}`, '_blank')}
+                                            className="btn-primary"
+                                            style={{
+                                                padding: '0.5rem',
+                                                width: '32px',
+                                                height: '32px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#f1f5f9',
+                                                color: '#475569'
+                                            }}
+                                            title="View Record"
+                                        >
+                                            <Eye size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => navigate(`/fingerprint/edit/${record.id}`)}
+                                            className="btn-primary"
+                                            style={{
+                                                padding: '0.5rem',
+                                                width: '32px',
+                                                height: '32px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#fef9c3',
+                                                color: '#854d0e'
+                                            }}
+                                            title="Edit Record"
+                                        >
+                                            <Pencil size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(record.id)}
+                                            className="btn-primary"
                                         style={{
                                             padding: '0.4rem 0.6rem',
                                             fontSize: '0.75rem',
@@ -504,6 +515,7 @@ export default function AllFingerprints() {
                                             <><Download size={14} /></>
                                         )}
                                     </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

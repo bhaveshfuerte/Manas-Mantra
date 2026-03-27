@@ -110,54 +110,60 @@ export default function Dashboard() {
                                         <tr key={scan.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                             <td data-label="Candidate" style={{ padding: '0.8rem 1rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                         <User size={18} color="#64748b" />
                                                     </div>
-                                                    <div>
-                                                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{scan.name}</div>
-                                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>#{scan.id.slice(-6)}</div>
+                                                    <div style={{ textAlign: 'left' }}>
+                                                        <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.9rem' }}>{scan.name}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#64748b' }}>#{scan.id.slice(-6)}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td data-label="Study / Occupation">
-                                                <div style={{ color: '#475569', fontSize: '0.9rem' }}>{scan.study || 'N/A'}</div>
+                                                <div style={{ color: '#475569', fontSize: '0.85rem' }}>{scan.study || 'N/A'}</div>
                                             </td>
                                             <td data-label="Date & Time">
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '0.9rem' }}>
-                                                    <Calendar size={14} />
-                                                    {new Date(scan.scannedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-                                                    <span style={{ color: '#94a3b8' }}>•</span>
-                                                    {new Date(scan.scannedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '0.8rem', justifyContent: 'flex-end' }}>
+                                                    <Calendar size={12} />
+                                                    <span>
+                                                        {new Date(scan.scannedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                                                        <span style={{ color: '#94a3b8', margin: '0 4px' }}>•</span>
+                                                        {new Date(scan.scannedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td data-label="Status">
-                                                <span style={{ 
-                                                    padding: '4px 10px', 
-                                                    borderRadius: '20px', 
-                                                    fontSize: '0.7rem', 
-                                                    fontWeight: 700, 
-                                                    textTransform: 'uppercase',
-                                                    backgroundColor: '#dcfce7',
-                                                    color: '#166534'
-                                                }}>
-                                                    Verified
-                                                </span>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                    <span style={{ 
+                                                        padding: '4px 10px', 
+                                                        borderRadius: '20px', 
+                                                        fontSize: '0.65rem', 
+                                                        fontWeight: 700, 
+                                                        textTransform: 'uppercase',
+                                                        backgroundColor: '#dcfce7',
+                                                        color: '#166534'
+                                                    }}>
+                                                        Verified
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td data-label="Actions" style={{ textAlign: 'right' }}>
-                                                <button
-                                                    onClick={() => window.open(`/fingerprint/view/${scan.id}`, '_blank')}
-                                                    style={{ 
-                                                        padding: '6px', 
-                                                        borderRadius: '6px', 
-                                                        backgroundColor: '#f1f5f9', 
-                                                        border: 'none', 
-                                                        color: '#64748b',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    title="View Profile"
-                                                >
-                                                    <Eye size={18} />
-                                                </button>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                    <button
+                                                        onClick={() => window.open(`/fingerprint/view/${scan.id}`, '_blank')}
+                                                        style={{ 
+                                                            padding: '6px', 
+                                                            borderRadius: '6px', 
+                                                            backgroundColor: '#f1f5f9', 
+                                                            border: 'none', 
+                                                            color: '#64748b',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                        title="View Profile"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
