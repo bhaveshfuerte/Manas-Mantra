@@ -96,7 +96,7 @@ export default function Dashboard() {
                         </div>
                         <table className="data-table">
                             <thead>
-                                <tr style={{ backgroundColor: '#f8fafc' }}>
+                                <tr>
                                     <th style={{ padding: '1rem' }}>Candidate</th>
                                     <th>Study / Occupation</th>
                                     <th>Date & Time</th>
@@ -107,27 +107,27 @@ export default function Dashboard() {
                             <tbody>
                                 {recentScans.length > 0 ? (
                                     recentScans.map(scan => (
-                                        <tr key={scan.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                        <tr key={scan.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                             <td data-label="Candidate" style={{ padding: '0.8rem 1rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                        <User size={18} color="#64748b" />
+                                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                        <User size={18} color="var(--text-secondary)" />
                                                     </div>
                                                     <div style={{ textAlign: 'left' }}>
-                                                        <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.9rem' }}>{scan.name}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: '#64748b' }}>#{scan.id.slice(-6)}</div>
+                                                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{scan.name}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>#{scan.id.slice(-6)}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td data-label="Study / Occupation">
-                                                <div style={{ color: '#475569', fontSize: '0.85rem' }}>{scan.study || 'N/A'}</div>
+                                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{scan.study || 'N/A'}</div>
                                             </td>
                                             <td data-label="Date & Time">
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '0.8rem', justifyContent: 'flex-end' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.8rem', justifyContent: 'flex-end' }}>
                                                     <Calendar size={12} />
                                                     <span>
                                                         {new Date(scan.scannedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-                                                        <span style={{ color: '#94a3b8', margin: '0 4px' }}>•</span>
+                                                        <span style={{ color: 'var(--text-secondary)', margin: '0 4px' }}>•</span>
                                                         {new Date(scan.scannedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </div>
@@ -154,9 +154,9 @@ export default function Dashboard() {
                                                         style={{ 
                                                             padding: '6px', 
                                                             borderRadius: '6px', 
-                                                            backgroundColor: '#f1f5f9', 
+                                                            backgroundColor: 'rgba(255, 255, 255, 0.1)', 
                                                             border: 'none', 
-                                                            color: '#64748b',
+                                                            color: 'var(--text-secondary)',
                                                             cursor: 'pointer'
                                                         }}
                                                         title="View Profile"
