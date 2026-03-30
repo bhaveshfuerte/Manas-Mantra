@@ -270,7 +270,7 @@ export default function AllFingerprints() {
 
         let currentY = detailsY + 54;
         const fingers = [
-            'Left_Little', 'Left_Ring', 'Left_Middle', 'Left_Index', 'Left_Thumb',
+            'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
             'Right_Thumb', 'Right_Index', 'Right_Middle', 'Right_Ring', 'Right_Little'
         ];
 
