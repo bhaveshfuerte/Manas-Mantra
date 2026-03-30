@@ -67,16 +67,16 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <>
-                    <div className="flex flex-wrap gap-4 mb-4 dashboard-grid" style={{ marginBottom: '2rem' }}>
-                        <div className="content-card" style={{ flex: 1, minWidth: '200px' }}>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: '0.5rem', WebkitOverflowScrolling: 'touch' }}>
+                        <div className="content-card" style={{ flex: '0 0 auto', minWidth: '240px', margin: 0 }}>
                             <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Total Users</h3>
                             <p style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.users}</p>
                         </div>
-                        <div className="content-card" style={{ flex: 1, minWidth: '200px' }}>
+                        <div className="content-card" style={{ flex: '0 0 auto', minWidth: '240px', margin: 0 }}>
                             <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Total Companies</h3>
                             <p style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.companies}</p>
                         </div>
-                        <div className="content-card" style={{ flex: 1, minWidth: '200px' }}>
+                        <div className="content-card" style={{ flex: '0 0 auto', minWidth: '240px', margin: 0 }}>
                             <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Scans Today</h3>
                             <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{stats.scansToday}</p>
                         </div>

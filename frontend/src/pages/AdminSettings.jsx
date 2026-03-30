@@ -126,14 +126,14 @@ export default function AdminSettings() {
                 <form onSubmit={handleSubmit}>
                     <div className="form-group" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                         <label style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>Company Logo</label>
-                        <div 
-                            style={{ 
-                                width: '150px', 
-                                height: '150px', 
-                                border: '2px dashed #cbd5e1', 
-                                borderRadius: '12px', 
-                                display: 'flex', 
-                                alignItems: 'center', 
+                        <div
+                            style={{
+                                width: '150px',
+                                height: '150px',
+                                border: '2px dashed #cbd5e1',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
                                 justifyContent: 'center',
                                 position: 'relative',
                                 overflow: 'hidden',
@@ -143,7 +143,7 @@ export default function AdminSettings() {
                             {companyDetails.logoBase64 ? (
                                 <>
                                     <img src={companyDetails.logoBase64} alt="Company Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={removeLogo}
                                         style={{ position: 'absolute', top: '5px', right: '5px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
@@ -158,16 +158,16 @@ export default function AdminSettings() {
                                 </div>
                             )}
                         </div>
-                        <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            style={{ display: 'none' }} 
-                            accept="image/*" 
-                            onChange={handleLogoChange} 
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            accept="image/*"
+                            onChange={handleLogoChange}
                         />
-                        <button 
-                            type="button" 
-                            className="btn-secondary" 
+                        <button
+                            type="button"
+                            className="btn-secondary"
                             style={{ marginTop: '1rem', width: 'auto', padding: '0.4rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}
                             onClick={() => fileInputRef.current.click()}
                         >
@@ -193,3 +193,5 @@ export default function AdminSettings() {
         </div>
     );
 }
+
+
