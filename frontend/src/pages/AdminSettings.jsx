@@ -65,6 +65,14 @@ export default function AdminSettings() {
             });
             if (res.ok) {
                 alert(`Company Settings Updated Successfully!`);
+                const localUser = JSON.parse(localStorage.getItem('user'));
+                if (localUser) {
+                    if (localUser.companyId === companyDetails.id || (localUser.role === 'Super Admin' && companies[0]?.id === companyDetails.id)) {
+                        localUser.logoBase64 = companyDetails.logoBase64;
+                        localStorage.setItem('user', JSON.stringify(localUser));
+                        window.location.reload();
+                    }
+                }
             } else {
                 alert('Failed to update company settings. Please try again.');
             }

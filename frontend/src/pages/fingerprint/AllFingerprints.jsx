@@ -102,6 +102,7 @@ export default function AllFingerprints() {
         let compName = "Biometric Solutions";
         let compContact = "123-456-7890";
         let compAddress = "123 Business Avenue, Tech District";
+        let compLogoBase64 = null;
         
         try {
             // First try matching the record's company ID
@@ -123,6 +124,7 @@ export default function AllFingerprints() {
                         compName = compData[0].name || compName;
                         compContact = compData[0].contactNumber || compContact;
                         compAddress = compData[0].address || compAddress;
+                        compLogoBase64 = compData[0].logoBase64;
                     }
                 }
             }
@@ -130,9 +132,13 @@ export default function AllFingerprints() {
 
         let logoObj = null;
         try {
-            const localUser = JSON.parse(localStorage.getItem('user'));
-            if (localUser && localUser.logoBase64) {
-                logoObj = await getImageMetadata(localUser.logoBase64);
+            if (compLogoBase64) {
+                logoObj = await getImageMetadata(compLogoBase64);
+            } else {
+                const localUser = JSON.parse(localStorage.getItem('user'));
+                if (localUser && localUser.logoBase64) {
+                    logoObj = await getImageMetadata(localUser.logoBase64);
+                }
             }
         } catch (e) {}
 
@@ -176,7 +182,7 @@ export default function AllFingerprints() {
             else if (logLw.includes('image/webp')) logoFormat = 'WEBP';
 
             try {
-                doc.addImage(logoObj.dataUrl, logoFormat, 16, 16, renderW, renderH, undefined, 'FAST');
+                doc.addImage(logoObj.dataUrl, logoFormat, 16, 16, renderW, renderH);
                 didDrawLogo = true;
             } catch (err) {
                 console.error("Failed to render custom logo:", err);
@@ -291,13 +297,32 @@ export default function AllFingerprints() {
                 const startX = 14;
                 const finalX = startX + xOffset + ((cellWidth - fixedWidth) / 2);
                 
+                let renderW = fixedWidth;
+                let renderH = fixedHeight;
+
+                if (imgObj.width && imgObj.height) {
+                    const imgRatio = imgObj.width / imgObj.height;
+                    const boxRatio = fixedWidth / fixedHeight;
+
+                    if (imgRatio > boxRatio) {
+                        renderW = fixedWidth;
+                        renderH = fixedWidth / imgRatio;
+                    } else {
+                        renderH = fixedHeight;
+                        renderW = fixedHeight * imgRatio;
+                    }
+                }
+
+                const imgX = finalX + (fixedWidth - renderW) / 2;
+                const imgY = imgRowY + (fixedHeight - renderH) / 2;
+                
                 let format = 'JPEG';
                 const lowerUrl = imgObj.dataUrl.toLowerCase();
                 if (lowerUrl.includes('image/png')) format = 'PNG';
                 else if (lowerUrl.includes('image/webp')) format = 'WEBP';
                 
                 try {
-                    doc.addImage(imgObj.dataUrl, format, finalX, imgRowY, fixedWidth, fixedHeight, undefined, 'FAST');
+                    doc.addImage(imgObj.dataUrl, format, imgX, imgY, renderW, renderH);
                 } catch(imgErr) {
                     console.error("Failed to inject image into PDF stream:", imgErr);
                 }
