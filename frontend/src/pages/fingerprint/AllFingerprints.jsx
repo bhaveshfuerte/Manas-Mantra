@@ -442,7 +442,7 @@ export default function AllFingerprints() {
                                     <div style={{ fontSize: '0.85rem' }}>{new Date(record.scannedAt).toLocaleDateString()}</div>
                                 </td>
                                 <td data-label="Actions">
-                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap', width: '100%' }}>
                                         <button
                                             onClick={() => window.open(`/fingerprint/view/${record.id}`, '_blank')}
                                             className="btn-primary"
@@ -481,38 +481,38 @@ export default function AllFingerprints() {
                                             onClick={() => handleDelete(record.id)}
                                             className="btn-primary"
                                         style={{
-                                            padding: '0.4rem 0.6rem',
-                                            fontSize: '0.75rem',
-                                            width: 'auto',
+                                            padding: '0.5rem',
+                                            width: '32px',
+                                            height: '32px',
                                             display: 'flex',
-                                            gap: '4px',
                                             alignItems: 'center',
+                                            justifyContent: 'center',
                                             backgroundColor: '#fee2e2',
                                             color: '#991b1b'
                                         }}
                                         title="Delete Record"
                                     >
-                                        <Trash2 size={14} />
+                                        <Trash2 size={16} />
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPDF(record)}
                                         disabled={downloadingId === record.id}
                                         className="btn-primary"
                                         style={{
-                                            padding: '0.4rem 0.6rem',
-                                            fontSize: '0.75rem',
-                                            width: 'auto',
+                                            padding: '0.5rem',
+                                            width: '32px',
+                                            height: '32px',
                                             display: 'flex',
-                                            gap: '4px',
                                             alignItems: 'center',
+                                            justifyContent: 'center',
                                             opacity: downloadingId === record.id ? 0.7 : 1
                                         }}
                                         title="Download PDF"
                                     >
                                         {downloadingId === record.id ? (
-                                            <><Loader2 size={12} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /></>
+                                            <><Loader2 size={16} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /></>
                                         ) : (
-                                            <><Download size={14} /></>
+                                            <><Download size={16} /></>
                                         )}
                                     </button>
                                     </div>
