@@ -164,11 +164,34 @@ export default function AddUser() {
                         {loggedInUser.role === 'Super Admin' && formData.role === 'Super Admin' && (
                             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                                 <label>Dashboard & PDF Logo</label>
-                                <input type="file" accept="image/*" className="form-input" onChange={async (e) => {
+                                <input type="file" accept="image/*" className="form-input" onChange={(e) => {
                                     const file = e.target.files[0];
                                     if (file) {
                                         const reader = new FileReader();
-                                        reader.onloadend = () => setFormData(prev => ({ ...prev, logoBase64: reader.result }));
+                                        reader.onloadend = () => {
+                                            const img = new Image();
+                                            img.onload = () => {
+                                                const canvas = document.createElement('canvas');
+                                                const MAX_SIZE = 300;
+                                                let width = img.width;
+                                                let height = img.height;
+
+                                                if (width > height && width > MAX_SIZE) {
+                                                    height *= MAX_SIZE / width;
+                                                    width = MAX_SIZE;
+                                                } else if (height > MAX_SIZE) {
+                                                    width *= MAX_SIZE / height;
+                                                    height = MAX_SIZE;
+                                                }
+
+                                                canvas.width = width;
+                                                canvas.height = height;
+                                                const ctx = canvas.getContext('2d');
+                                                ctx.drawImage(img, 0, 0, width, height);
+                                                setFormData(prev => ({ ...prev, logoBase64: canvas.toDataURL(file.type || 'image/png') }));
+                                            };
+                                            img.src = reader.result;
+                                        };
                                         reader.readAsDataURL(file);
                                     }
                                 }} />

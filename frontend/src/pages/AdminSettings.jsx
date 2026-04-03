@@ -44,7 +44,29 @@ export default function AdminSettings() {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setCompanyDetails(prev => ({ ...prev, logoBase64: reader.result }));
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_SIZE = 300;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height && width > MAX_SIZE) {
+                        height *= MAX_SIZE / width;
+                        width = MAX_SIZE;
+                    } else if (height > MAX_SIZE) {
+                        width *= MAX_SIZE / height;
+                        height = MAX_SIZE;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const resizedBase64 = canvas.toDataURL(file.type || 'image/png');
+                    setCompanyDetails(prev => ({ ...prev, logoBase64: resizedBase64 }));
+                };
+                img.src = reader.result;
             };
             reader.readAsDataURL(file);
         }
@@ -74,11 +96,12 @@ export default function AdminSettings() {
                     }
                 }
             } else {
-                alert('Failed to update company settings. Please try again.');
+                const errText = await res.text();
+                alert(`Failed to update company settings. Server returned: ${res.status} ${errText}`);
             }
         } catch (error) {
             console.error(error);
-            alert('Error connecting to the server.');
+            alert(`Error connecting to the server: ${error.message}`);
         }
     };
 
