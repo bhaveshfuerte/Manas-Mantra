@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Fingerprint, LogOut, Building, List, Settings } from 'lucide-react';
 
-export default function Sidebar({ onClose }) {
+export default function Sidebar({ onClose, globalName, globalLogo }) {
     const location = useLocation();
     const isActive = (path) => location.pathname === path;
 
@@ -23,12 +23,12 @@ export default function Sidebar({ onClose }) {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="sidebar-header">
                 <h2>
-                    {user?.logoBase64 ? (
-                        <img src={user.logoBase64} alt="Company Logo" style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px' }} />
+                    {globalLogo ? (
+                        <img src={globalLogo} alt="Company Logo" style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px' }} />
                     ) : (
                         <Fingerprint className="text-primary" />
                     )}
-                    {user?.companyName || 'Manas Matrix'}
+                    {globalName}
                 </h2>
             </div>
 

@@ -1,6 +1,6 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 
 export default function Layout() {
@@ -14,6 +14,24 @@ export default function Layout() {
         user = {};
     }
 
+    const [companyData, setCompanyData] = useState(null);
+
+    useEffect(() => {
+        if (user && user.companyId && user.companyId !== 'all') {
+            fetch(`/api/companies?companyId=${user.companyId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        setCompanyData(data[0]);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    }, [user?.companyId]);
+
+    const globalName = companyData?.name || user?.companyName || 'Manas Matrix';
+    const globalLogo = companyData?.logoBase64 || user?.logoBase64 || null;
+
     if (!isAuthenticated) return <Navigate to="/login" replace />;
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -23,7 +41,7 @@ export default function Layout() {
         <div className="app-layout">
             {/* Mobile Top Header */}
             <div className="mobile-header">
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{user?.companyName || 'Manas Matrix'}</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{globalName}</h2>
                 <button onClick={toggleSidebar} style={{ background: 'none', border: 'none', color: 'white' }}>
                     {isSidebarOpen ? <X size={28} /> : <Menu size={28} />}
                 </button>
@@ -38,7 +56,7 @@ export default function Layout() {
             <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`} style={{ zIndex: 100 }} onClick={closeSidebar}>
                 {/* We use onClick inside sidebar wrapper to auto-close when an item is clicked, or let the user click items.
             Actually, better to modify Sidebar but we'll leave it simple. */}
-                <Sidebar onClose={closeSidebar} />
+                <Sidebar onClose={closeSidebar} globalName={globalName} globalLogo={globalLogo} />
             </div>
 
             <main className="main-content">
