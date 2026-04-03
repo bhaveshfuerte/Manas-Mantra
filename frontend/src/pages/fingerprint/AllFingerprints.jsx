@@ -437,7 +437,7 @@ export default function AllFingerprints() {
             </div>
 
             <div className="content-card" style={{ overflowX: 'auto' }}>
-                <table className="data-table">
+                <table className="data-table" style={{ minWidth: '800px' }}>
                     <thead>
                         <tr>
                             <th>ID</th>
