@@ -23,7 +23,7 @@ export default function Layout() {
         <div className="app-layout">
             {/* Mobile Top Header */}
             <div className="mobile-header">
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{user?.companyName || 'Manas Mantra'}</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{user?.companyName || 'Manas Matrix'}</h2>
                 <button onClick={toggleSidebar} style={{ background: 'none', border: 'none', color: 'white' }}>
                     {isSidebarOpen ? <X size={28} /> : <Menu size={28} />}
                 </button>

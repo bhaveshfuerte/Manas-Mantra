@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['vite.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'Manas Mantra',
-        short_name: 'ManasMantra',
-        description: 'Manas Mantra Application',
+        name: 'Manas Matrix',
+        short_name: 'ManasMatrix',
+        description: 'Manas Matrix Application',
         theme_color: '#ffffff',
         icons: [
           {

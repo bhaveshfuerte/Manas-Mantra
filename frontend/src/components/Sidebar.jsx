@@ -28,7 +28,7 @@ export default function Sidebar({ onClose }) {
                     ) : (
                         <Fingerprint className="text-primary" />
                     )}
-                    {user?.companyName || 'Manas Mantra'}
+                    {user?.companyName || 'Manas Matrix'}
                 </h2>
             </div>
 
