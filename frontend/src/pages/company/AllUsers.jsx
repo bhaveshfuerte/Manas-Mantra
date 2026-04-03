@@ -98,13 +98,22 @@ export default function AllUsers() {
                                     }
                                 </td>
                                 <td>
-                                    <button
-                                        className="btn-primary"
-                                        style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
-                                        onClick={() => navigate('/company/add-user', { state: { user: u } })}
-                                    >
-                                        Edit
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        <button
+                                            className="btn-primary"
+                                            onClick={() => navigate('/company/add-user', { state: { user: u, viewMode: true } })}
+                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto', backgroundColor: '#f1f5f9', color: '#475569' }}
+                                        >
+                                            View
+                                        </button>
+                                        <button
+                                            className="btn-primary"
+                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
+                                            onClick={() => navigate('/company/add-user', { state: { user: u } })}
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

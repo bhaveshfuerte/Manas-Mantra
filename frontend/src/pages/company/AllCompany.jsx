@@ -80,13 +80,22 @@ export default function AllCompany() {
                                     </span>
                                 </td>
                                 <td>
-                                    <button 
-                                        className="btn-primary" 
-                                        onClick={() => navigate('/company/edit-company', { state: { company: c } })}
-                                        style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
-                                    >
-                                        Edit
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        <button 
+                                            className="btn-primary" 
+                                            onClick={() => navigate('/company/edit-company', { state: { company: c, viewMode: true } })}
+                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto', backgroundColor: '#f1f5f9', color: '#475569' }}
+                                        >
+                                            View
+                                        </button>
+                                        <button 
+                                            className="btn-primary" 
+                                            onClick={() => navigate('/company/edit-company', { state: { company: c } })}
+                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

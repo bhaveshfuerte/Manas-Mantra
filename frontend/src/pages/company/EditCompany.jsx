@@ -5,6 +5,7 @@ export default function EditCompany() {
     const location = useLocation();
     const navigate = useNavigate();
     const passedCompany = location.state?.company;
+    const isViewMode = location.state?.viewMode || false;
 
     const [companyDetails, setCompanyDetails] = useState(
         passedCompany || { id: '', name: '', contactNumber: '', address: '', status: 'Active' }
@@ -42,20 +43,21 @@ export default function EditCompany() {
 
     return (
         <div style={{ paddingBottom: '2rem' }}>
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1>Edit Company</h1>
-                    <p>Update details and settings for {passedCompany.name}.</p>
+                    <h1>{isViewMode ? 'View Company' : 'Edit Company'}</h1>
+                    <p>{isViewMode ? `Viewing details for ${passedCompany.name}.` : `Update details and settings for ${passedCompany.name}.`}</p>
                 </div>
-                <button className="btn-secondary" onClick={() => navigate('/company/all-company')}>
-                    Cancel
+                <button className="btn-secondary" onClick={() => navigate('/company/all-company')} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}>
+                    {isViewMode ? 'Back' : 'Cancel'}
                 </button>
             </div>
 
             <div className="content-card" style={{ maxWidth: '600px' }}>
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Company Name</label>
+                    <fieldset disabled={isViewMode} style={{ border: 'none', padding: 0, margin: 0 }}>
+                        <div className="form-group">
+                            <label>Company Name</label>
                         <input type="text" name="name" className="form-input" value={companyDetails.name} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
@@ -73,7 +75,8 @@ export default function EditCompany() {
                              <option value="Deactive">Deactive</option>
                          </select>
                     </div>
-                    <button type="submit" className="btn-primary mt-4">Save Updates</button>
+                    </fieldset>
+                    {!isViewMode && <button type="submit" className="btn-primary mt-4">Save Updates</button>}
                 </form>
             </div>
         </div>

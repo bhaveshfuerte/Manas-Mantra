@@ -15,6 +15,7 @@ export default function AddUser() {
     const location = useLocation();
     const navigate = useNavigate();
     const editUser = location.state?.user || null;
+    const isViewMode = location.state?.viewMode || false;
     const isEditMode = !!editUser;
 
     const [formData, setFormData] = useState({
@@ -113,15 +114,23 @@ export default function AddUser() {
 
     return (
         <div style={{ paddingBottom: '2rem' }}>
-            <div className="page-header">
-                <h1>{isEditMode ? 'Edit User' : 'Add New User'}</h1>
-                <p>{isEditMode ? 'Modify existing user details and permissions.' : 'Register a new system user and configure their permissions.'}</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                    <h1>{isViewMode ? 'View User' : isEditMode ? 'Edit User' : 'Add New User'}</h1>
+                    <p>{isViewMode ? 'Viewing user details and permissions.' : isEditMode ? 'Modify existing user details and permissions.' : 'Register a new system user and configure their permissions.'}</p>
+                </div>
+                {isViewMode && (
+                    <button className="btn-secondary" onClick={() => navigate(-1)} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}>
+                        Back
+                    </button>
+                )}
             </div>
 
             <div className="content-card" style={{ maxWidth: '800px' }}>
                 <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                        <div className="form-group">
+                    <fieldset disabled={isViewMode} style={{ border: 'none', padding: 0, margin: 0 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                            <div className="form-group">
                             <label>User Full Name</label>
                             <input type="text" name="name" className="form-input" value={formData.name} onChange={handleChange} required />
                         </div>
@@ -190,7 +199,8 @@ export default function AddUser() {
                         </div>
                     )}
 
-                    <button type="submit" className="btn-primary">{isEditMode ? 'Save Changes' : 'Save Secure User'}</button>
+                    </fieldset>
+                    {!isViewMode && <button type="submit" className="btn-primary">{isEditMode ? 'Save Changes' : 'Save Secure User'}</button>}
                 </form>
             </div>
         </div>
