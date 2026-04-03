@@ -26,8 +26,8 @@ export default function AllUsers() {
             .catch(err => console.error("Error fetching users:", err));
     }, []);
 
-    const displayedUsers = users.filter(u => 
-        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const displayedUsers = users.filter(u =>
+        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.role?.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -40,10 +40,10 @@ export default function AllUsers() {
                     <p>List of all registered system users.</p>
                 </div>
                 <div style={{ minWidth: '250px' }}>
-                    <input 
-                        type="text" 
-                        placeholder="Search users..." 
-                        className="form-input" 
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        className="form-input"
                         style={{ margin: 0 }}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -81,8 +81,8 @@ export default function AllUsers() {
                                 </td>
                                 <td>{u.companyId || 'N/A (Super)'}</td>
                                 <td>
-                                    {u.permissions?.includes('all') 
-                                        ? 'Full Access' 
+                                    {u.permissions?.includes('all')
+                                        ? 'Full Access'
                                         : (u.permissions?.map(pId => {
                                             const match = [
                                                 { id: 'dashboard', label: 'Dashboard' },

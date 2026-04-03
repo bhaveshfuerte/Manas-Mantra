@@ -28,7 +28,7 @@ export default function Sidebar({ onClose }) {
                     ) : (
                         <Fingerprint className="text-primary" />
                     )}
-                    ScannerApp
+                    {user?.companyName || 'Manas Mantra'}
                 </h2>
             </div>
 
