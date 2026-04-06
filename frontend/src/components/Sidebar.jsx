@@ -26,7 +26,7 @@ export default function Sidebar({ onClose, globalName, globalLogo }) {
                     {globalLogo ? (
                         <img src={globalLogo} alt="Company Logo" style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px' }} />
                     ) : (
-                        <img src="/logo.png" alt="Company Logo fallback" style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px' }} />
+                        <Fingerprint className="text-primary" />
                     )}
                     {globalName}
                 </h2>
