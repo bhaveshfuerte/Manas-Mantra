@@ -40,8 +40,11 @@ export default function Layout() {
     return (
         <div className="app-layout">
             {/* Mobile Top Header */}
-            <div className="mobile-header">
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{globalName}</h2>
+            <div className="mobile-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={globalLogo || "/logo.png"} alt="Logo" style={{ width: '28px', height: '28px', borderRadius: '4px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px' }} />
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{globalName}</h2>
+                </div>
                 <button onClick={toggleSidebar} style={{ background: 'none', border: 'none', color: 'white' }}>
                     {isSidebarOpen ? <X size={28} /> : <Menu size={28} />}
                 </button>
