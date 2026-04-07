@@ -106,7 +106,7 @@ export default function AllFingerprints() {
         
         try {
             // First try matching the record's company ID
-            let fetchedCompanyId = record.companyId && record.companyId !== 'unassigned' ? record.companyId : null;
+            let fetchedCompanyId = record.companyId && record.companyId !== 'unassigned' && record.companyId !== 'all' ? record.companyId : null;
             
             // If the record has no assigned company, assume they belong to the current logged-in user's company
             if (!fetchedCompanyId) {
@@ -262,19 +262,20 @@ export default function AllFingerprints() {
         const detailsY = 75;
         const col1 = 20;
         const col2 = 65;
-        doc.text("Name", col1, detailsY); doc.text(`: ${record.name}`, col2, detailsY);
-        doc.text("Age", col1, detailsY + 8); doc.text(`: ${record.age || 'N/A'}`, col2, detailsY + 8);
-        doc.text("Study/Occupation", col1, detailsY + 16); doc.text(`: ${record.study || 'N/A'}`, col2, detailsY + 16);
-        doc.text("Father's Name", col1, detailsY + 24); doc.text(`: ${record.fatherName || 'N/A'}`, col2, detailsY + 24);
-        doc.text("Contact", col1, detailsY + 32); doc.text(`: ${record.contactDetails || 'N/A'}`, col2, detailsY + 32);
-        doc.text("Scan Date", col1, detailsY + 40); doc.text(`: ${new Date(record.scannedAt).toLocaleDateString()}`, col2, detailsY + 40);
+        doc.text("Company", col1, detailsY); doc.text(`: ${compName}`, col2, detailsY);
+        doc.text("Name", col1, detailsY + 8); doc.text(`: ${record.name}`, col2, detailsY + 8);
+        doc.text("Age", col1, detailsY + 16); doc.text(`: ${record.age || 'N/A'}`, col2, detailsY + 16);
+        doc.text("Study/Occupation", col1, detailsY + 24); doc.text(`: ${record.study || 'N/A'}`, col2, detailsY + 24);
+        doc.text("Father's Name", col1, detailsY + 32); doc.text(`: ${record.fatherName || 'N/A'}`, col2, detailsY + 32);
+        doc.text("Contact", col1, detailsY + 40); doc.text(`: ${record.contactDetails || 'N/A'}`, col2, detailsY + 40);
+        doc.text("Scan Date", col1, detailsY + 48); doc.text(`: ${new Date(record.scannedAt).toLocaleDateString()}`, col2, detailsY + 48);
 
         // Divider Line Below Info
         doc.setDrawColor(200, 190, 180);
         doc.setLineWidth(1);
-        doc.line(20, detailsY + 48, pageWidth - 20, detailsY + 48);
+        doc.line(20, detailsY + 56, pageWidth - 20, detailsY + 56);
 
-        let currentY = detailsY + 54;
+        let currentY = detailsY + 62;
         const fingers = [
             'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
             'Right_Thumb', 'Right_Index', 'Right_Middle', 'Right_Ring', 'Right_Little'
