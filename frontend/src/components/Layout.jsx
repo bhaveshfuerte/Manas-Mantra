@@ -6,7 +6,7 @@ import { Menu, X } from 'lucide-react';
 export default function Layout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const isAuthenticated = !!localStorage.getItem('token');
-    
+
     let user;
     try {
         user = JSON.parse(localStorage.getItem('user'));
