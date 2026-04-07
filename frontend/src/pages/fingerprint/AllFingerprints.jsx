@@ -99,7 +99,7 @@ export default function AllFingerprints() {
                 }
             }
 
-        let compName = "Biometric Solutions";
+        let compName = "Manas Matrix";
         let compContact = "123-456-7890";
         let compAddress = "123 Business Avenue, Tech District";
         let compLogoBase64 = null;
@@ -182,7 +182,7 @@ export default function AllFingerprints() {
             else if (logLw.includes('image/webp')) logoFormat = 'WEBP';
 
             try {
-                doc.addImage(logoObj.dataUrl, logoFormat, 16, 16, renderW, renderH);
+                doc.addImage(logoObj.dataUrl, logoFormat, 16, 16, renderW, renderH, undefined, 'NONE');
                 didDrawLogo = true;
             } catch (err) {
                 console.error("Failed to render custom logo:", err);
@@ -322,7 +322,7 @@ export default function AllFingerprints() {
                 else if (lowerUrl.includes('image/webp')) format = 'WEBP';
                 
                 try {
-                    doc.addImage(imgObj.dataUrl, format, imgX, imgY, renderW, renderH);
+                    doc.addImage(imgObj.dataUrl, format, imgX, imgY, renderW, renderH, undefined, 'NONE');
                 } catch(imgErr) {
                     console.error("Failed to inject image into PDF stream:", imgErr);
                 }
