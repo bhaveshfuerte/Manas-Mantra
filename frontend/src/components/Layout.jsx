@@ -29,8 +29,8 @@ export default function Layout() {
         }
     }, [user?.companyId]);
 
-    const globalName = companyData?.name || user?.companyName || 'Manas Matrix';
-    const globalLogo = companyData?.logoBase64 || user?.logoBase64 || null;
+    const globalName = companyData?.name || 'Manas Matrix';
+    const globalLogo = companyData?.logoBase64 || null;
 
     if (!isAuthenticated) return <Navigate to="/login" replace />;
 

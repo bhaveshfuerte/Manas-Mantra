@@ -229,7 +229,9 @@ export default function AllFingerprints() {
         doc.setDrawColor(255, 255, 255);
         doc.setLineWidth(0.4);
         doc.line(iconX + 0.5, 22.5, iconX + 2.5, 24); doc.line(iconX + 2.5, 24, iconX + 4.5, 22.5);
-        doc.text("support@company.com", iconX + 7, 25);
+        
+        let dynamicEmail = `contact@${compName.replace(/\s+/g, '').toLowerCase()}.com`;
+        doc.text(dynamicEmail.substring(0, 30), iconX + 7, 25);
 
         // Location Pin 📍
         doc.setFillColor(114, 98, 85);
@@ -253,7 +255,8 @@ export default function AllFingerprints() {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("FINGER PRINT DATA", pageWidth / 2, ry + 8, { align: 'center' });
+        const dynamicRibbonTitle = `${compName.toUpperCase()} - FINGER PRINT RECORD`;
+        doc.text(dynamicRibbonTitle, pageWidth / 2, ry + 8, { align: 'center' });
 
         // 7. Profile Information Details
         doc.setTextColor(30, 30, 30);
