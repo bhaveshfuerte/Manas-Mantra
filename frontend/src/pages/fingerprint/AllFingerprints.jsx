@@ -99,7 +99,7 @@ export default function AllFingerprints() {
                 }
             }
 
-        let compName = "Manas Matrix";
+        let compName = "Manas-Mantra";
         let compContact = "123-456-7890";
         let compAddress = "123 Business Avenue, Tech District";
         let compLogoBase64 = null;

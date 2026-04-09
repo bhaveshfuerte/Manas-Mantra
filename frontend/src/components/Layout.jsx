@@ -29,7 +29,7 @@ export default function Layout() {
         }
     }, [user?.companyId]);
 
-    const globalName = companyData?.name || 'Manas Matrix';
+    const globalName = companyData?.name || 'Manas-Mantra';
     const globalLogo = companyData?.logoBase64 || null;
 
     if (!isAuthenticated) return <Navigate to="/login" replace />;
