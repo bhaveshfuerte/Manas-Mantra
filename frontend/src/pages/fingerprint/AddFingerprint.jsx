@@ -1,6 +1,9 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
+import ImageBlobReduce from 'image-blob-reduce';
+
+const reduce = new ImageBlobReduce();
 
 const FINGERS = [
     'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
@@ -24,7 +27,7 @@ export default function AddFingerprint() {
 
     const [photos, setPhotos] = useState(() => getInitialPhotos());
 
-    const [isCompressing, setIsCompressing] = useState(false);
+    const [uploadingSlot, setUploadingSlot] = useState(null);
 
     const fileInputRef = useRef(null);
     const webcamRef = useRef(null);
@@ -73,18 +76,19 @@ export default function AddFingerprint() {
         if (webcamRef.current) {
             const imageSrc = webcamRef.current.getScreenshot();
             if (imageSrc && activeWebcamCapture) {
-                setIsCompressing(true);
+                const { finger, pos } = activeWebcamCapture;
+                setUploadingSlot({ finger, pos });
                 try {
                     const uploadedUrl = await uploadSingleImage(imageSrc);
                     setPhotos(prev => {
                         const updated = {
                             ...prev,
-                            [activeWebcamCapture.finger]: {
-                                ...prev[activeWebcamCapture.finger],
-                                [activeWebcamCapture.pos]: uploadedUrl
+                            [finger]: {
+                                ...prev[finger],
+                                [pos]: uploadedUrl
                             }
                         };
-                        focusNextMissingSlot(activeWebcamCapture.finger, activeWebcamCapture.pos, updated);
+                        focusNextMissingSlot(finger, pos, updated);
                         return updated;
                     });
                 } catch (e) {
@@ -92,7 +96,7 @@ export default function AddFingerprint() {
                 } finally {
                     setIsModalOpen(false);
                     setActiveWebcamCapture(null);
-                    setIsCompressing(false);
+                    setUploadingSlot(null);
                 }
             }
         }
@@ -129,9 +133,10 @@ export default function AddFingerprint() {
 
         if (!file || !finger || !pos) return;
 
-        setIsCompressing(true);
+        setUploadingSlot({ finger, pos });
 
         try {
+            const reducedBlob = await reduce.toBlob(file, { max: 2000 });
             const reader = new FileReader();
 
             reader.onloadend = async () => {
@@ -149,13 +154,13 @@ export default function AddFingerprint() {
                     alert("Failed to upload photo to server.");
                 } finally {
                     e.target.value = ''; // Reset input to allow recapturing
-                    setIsCompressing(false);
+                    setUploadingSlot(null);
                 }
             };
-            reader.readAsDataURL(file); // Read raw file directly for maximum quality
+            reader.readAsDataURL(reducedBlob);
         } catch (err) {
             console.error("File read failed:", err);
-            setIsCompressing(false);
+            setUploadingSlot(null);
         }
     };
 
@@ -214,11 +219,6 @@ export default function AddFingerprint() {
                 <div className="content-card">
                     <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Personal Details</h3>
 
-                    {isCompressing && (
-                        <div style={{ backgroundColor: 'var(--primary-color)', color: 'white', padding: '10px', borderRadius: '8px', marginBottom: '1rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <Loader2 size={16} style={{ animation: 'spin 2s linear infinite' }} /> Uploading Image to Server...
-                        </div>
-                    )}
                     <div className="dashboard-grid">
                         <div className="form-group">
                             <label>Full Name</label>
@@ -258,22 +258,31 @@ export default function AddFingerprint() {
                                         const isCaptured = !!photos[finger][pos];
                                         return (
                                             <div key={`${finger}-${pos}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                                                <button
-                                                    id={`btn-${finger}-${pos}`}
-                                                    type="button"
-                                                    onClick={() => isCaptured ? removePhoto(finger, pos) : triggerCamera(finger, pos)}
-                                                    className={`finger-pos-btn ${isCaptured ? 'captured' : ''}`}
-                                                    title={isCaptured ? "Click to retake/remove" : "Click to capture"}
-                                                    style={{ width: '100%' }}
-                                                >
-                                                    {isCaptured ? `✓ ${pos}` : pos}
-                                                </button>
-                                                {isCaptured && (
-                                                    <img
-                                                        src={photos[finger][pos]}
-                                                        alt={`${finger} ${pos}`}
-                                                        style={{ width: '40px', height: '40px', objectFit: 'cover', marginTop: '6px', borderRadius: '4px', border: '1px solid var(--success)' }}
-                                                    />
+                                                {uploadingSlot?.finger === finger && uploadingSlot?.pos === pos ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '10px', minHeight: '60px', backgroundColor: '#f0f4ff', borderRadius: '8px' }}>
+                                                        <Loader2 size={24} style={{ animation: 'spin 2s linear infinite', color: 'var(--primary-color)' }} />
+                                                        <span style={{ fontSize: '0.75rem', marginTop: '6px', color: 'var(--primary-color)', fontWeight: 'bold' }}>Uploading...</span>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            id={`btn-${finger}-${pos}`}
+                                                            type="button"
+                                                            onClick={() => isCaptured ? removePhoto(finger, pos) : triggerCamera(finger, pos)}
+                                                            className={`finger-pos-btn ${isCaptured ? 'captured' : ''}`}
+                                                            title={isCaptured ? "Click to retake/remove" : "Click to capture"}
+                                                            style={{ width: '100%' }}
+                                                        >
+                                                            {isCaptured ? `✓ ${pos}` : pos}
+                                                        </button>
+                                                        {isCaptured && (
+                                                            <img
+                                                                src={photos[finger][pos]}
+                                                                alt={`${finger} ${pos}`}
+                                                                style={{ width: '40px', height: '40px', objectFit: 'cover', marginTop: '6px', borderRadius: '4px', border: '1px solid var(--success)' }}
+                                                            />
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                         )
@@ -317,7 +326,7 @@ export default function AddFingerprint() {
                             audio={false}
                             ref={webcamRef}
                             screenshotFormat="image/jpeg"
-                            screenshotQuality={1}
+                            screenshotQuality={0.85}
                             videoConstraints={{ facingMode: "environment", width: 1920, height: 1080 }}
                             width="100%"
                             style={{ objectFit: 'cover' }}
