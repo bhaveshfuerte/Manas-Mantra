@@ -1,10 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Upload, X, Loader2, ArrowLeft } from 'lucide-react';
-import ImageBlobReduce from 'image-blob-reduce';
 import { useParams, useNavigate } from 'react-router-dom';
-
-const reduce = new ImageBlobReduce();
 
 const FINGERS = [
     'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
@@ -113,7 +110,6 @@ export default function EditFingerprint() {
         setIsCompressing(true);
 
         try {
-            const reducedBlob = await reduce.toBlob(file, { max: 1500 });
             const reader = new FileReader();
 
             reader.onloadend = () => {
@@ -124,7 +120,7 @@ export default function EditFingerprint() {
                 e.target.value = '';
                 setIsCompressing(false);
             };
-            reader.readAsDataURL(reducedBlob);
+            reader.readAsDataURL(file); // Read raw file directly for maximum quality
         } catch (err) {
             console.error("File read failed:", err);
             setIsCompressing(false);

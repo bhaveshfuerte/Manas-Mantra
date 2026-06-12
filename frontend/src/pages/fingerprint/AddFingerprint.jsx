@@ -1,9 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
-import ImageBlobReduce from 'image-blob-reduce';
-
-const reduce = new ImageBlobReduce();
 
 const FINGERS = [
     'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
@@ -115,9 +112,6 @@ export default function AddFingerprint() {
         setIsCompressing(true);
 
         try {
-            // Compress the massive phone photo to max 1500px to ensure the payload is small enough to upload quickly over mobile networks,
-            // while remaining more than perfectly sharp for the tiny A4 PDF box!
-            const reducedBlob = await reduce.toBlob(file, { max: 1500 });
             const reader = new FileReader();
 
             reader.onloadend = () => {
@@ -132,7 +126,7 @@ export default function AddFingerprint() {
                 e.target.value = ''; // Reset input to allow recapturing
                 setIsCompressing(false);
             };
-            reader.readAsDataURL(reducedBlob);
+            reader.readAsDataURL(file); // Read raw file directly for maximum quality
         } catch (err) {
             console.error("File read failed:", err);
             setIsCompressing(false);
