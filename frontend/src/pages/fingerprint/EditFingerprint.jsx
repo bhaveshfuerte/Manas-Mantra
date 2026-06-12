@@ -84,19 +84,38 @@ export default function EditFingerprint() {
         }
     };
 
-    const captureFromWebcam = useCallback(() => {
+    const uploadSingleImage = async (base64Str) => {
+        const res = await fetch('/api/fingerprints/upload-single', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageBase64: base64Str })
+        });
+        if (!res.ok) throw new Error("Failed to upload image");
+        const data = await res.json();
+        return data.url;
+    };
+
+    const captureFromWebcam = useCallback(async () => {
         if (webcamRef.current) {
             const imageSrc = webcamRef.current.getScreenshot();
             if (imageSrc && activeWebcamCapture) {
-                setPhotos(prev => ({
-                    ...prev,
-                    [activeWebcamCapture.finger]: {
-                        ...prev[activeWebcamCapture.finger],
-                        [activeWebcamCapture.pos]: imageSrc
-                    }
-                }));
-                setIsModalOpen(false);
-                setActiveWebcamCapture(null);
+                setIsCompressing(true);
+                try {
+                    const uploadedUrl = await uploadSingleImage(imageSrc);
+                    setPhotos(prev => ({
+                        ...prev,
+                        [activeWebcamCapture.finger]: {
+                            ...prev[activeWebcamCapture.finger],
+                            [activeWebcamCapture.pos]: uploadedUrl
+                        }
+                    }));
+                } catch (e) {
+                    alert("Failed to upload photo to server.");
+                } finally {
+                    setIsModalOpen(false);
+                    setActiveWebcamCapture(null);
+                    setIsCompressing(false);
+                }
             }
         }
     }, [webcamRef, activeWebcamCapture]);
@@ -112,13 +131,19 @@ export default function EditFingerprint() {
         try {
             const reader = new FileReader();
 
-            reader.onloadend = () => {
-                setPhotos(prev => ({
-                    ...prev,
-                    [finger]: { ...prev[finger], [pos]: reader.result }
-                }));
-                e.target.value = '';
-                setIsCompressing(false);
+            reader.onloadend = async () => {
+                try {
+                    const uploadedUrl = await uploadSingleImage(reader.result);
+                    setPhotos(prev => ({
+                        ...prev,
+                        [finger]: { ...prev[finger], [pos]: uploadedUrl }
+                    }));
+                } catch (err) {
+                    alert("Failed to upload photo to server.");
+                } finally {
+                    e.target.value = '';
+                    setIsCompressing(false);
+                }
             };
             reader.readAsDataURL(file); // Read raw file directly for maximum quality
         } catch (err) {
@@ -173,6 +198,11 @@ export default function EditFingerprint() {
             <form onSubmit={handleSubmit}>
                 <div className="content-card">
                     <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Personal Details</h3>
+                    {isCompressing && (
+                        <div style={{ backgroundColor: 'var(--primary-color)', color: 'white', padding: '10px', borderRadius: '8px', marginBottom: '1rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <Loader2 size={16} style={{ animation: 'spin 2s linear infinite' }} /> Uploading Image to Server...
+                        </div>
+                    )}
                     <div className="dashboard-grid">
                         <div className="form-group">
                             <label>Full Name</label>

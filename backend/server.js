@@ -147,6 +147,36 @@ app.get('/api/users', (req, res) => {
     res.status(200).json(filtered);
 });
 
+// Upload single photo immediately
+app.post('/api/fingerprints/upload-single', (req, res) => {
+    try {
+        const { imageBase64 } = req.body;
+        if (!imageBase64) return res.status(400).json({ message: 'No image provided' });
+
+        const tempDir = path.join(__dirname, 'uploads', 'temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+
+        const fileName = `fp_${Date.now()}_${Math.floor(Math.random() * 10000)}.jpg`;
+        const filePath = path.join(tempDir, fileName);
+
+        const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            return res.status(400).json({ message: 'Invalid base64 string' });
+        }
+
+        const imgBuffer = Buffer.from(matches[2], 'base64');
+        fs.writeFileSync(filePath, imgBuffer);
+
+        const url = `/uploads/temp/${fileName}`;
+        res.status(200).json({ url });
+    } catch (error) {
+        console.error("Single upload error:", error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Real Fingerprint API
 app.post('/api/fingerprints', (req, res) => {
     try {

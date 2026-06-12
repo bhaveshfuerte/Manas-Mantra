@@ -58,26 +58,46 @@ export default function AddFingerprint() {
         }
     };
 
-    const captureFromWebcam = useCallback(() => {
+    const uploadSingleImage = async (base64Str) => {
+        const res = await fetch('/api/fingerprints/upload-single', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageBase64: base64Str })
+        });
+        if (!res.ok) throw new Error("Failed to upload image");
+        const data = await res.json();
+        return data.url;
+    };
+
+    const captureFromWebcam = useCallback(async () => {
         if (webcamRef.current) {
             const imageSrc = webcamRef.current.getScreenshot();
             if (imageSrc && activeWebcamCapture) {
-                setPhotos(prev => {
-                    const updated = {
-                        ...prev,
-                        [activeWebcamCapture.finger]: {
-                            ...prev[activeWebcamCapture.finger],
-                            [activeWebcamCapture.pos]: imageSrc
-                        }
-                    };
-                    focusNextMissingSlot(activeWebcamCapture.finger, activeWebcamCapture.pos, updated);
-                    return updated;
-                });
-                setIsModalOpen(false);
-                setActiveWebcamCapture(null);
+                setIsCompressing(true);
+                try {
+                    const uploadedUrl = await uploadSingleImage(imageSrc);
+                    setPhotos(prev => {
+                        const updated = {
+                            ...prev,
+                            [activeWebcamCapture.finger]: {
+                                ...prev[activeWebcamCapture.finger],
+                                [activeWebcamCapture.pos]: uploadedUrl
+                            }
+                        };
+                        focusNextMissingSlot(activeWebcamCapture.finger, activeWebcamCapture.pos, updated);
+                        return updated;
+                    });
+                } catch (e) {
+                    alert("Failed to upload photo to server.");
+                } finally {
+                    setIsModalOpen(false);
+                    setActiveWebcamCapture(null);
+                    setIsCompressing(false);
+                }
             }
         }
     }, [webcamRef, activeWebcamCapture]);
+
 
     const focusNextMissingSlot = (currentFinger, currentPos, newPhotosState) => {
         let foundCurrent = false;
@@ -114,17 +134,23 @@ export default function AddFingerprint() {
         try {
             const reader = new FileReader();
 
-            reader.onloadend = () => {
-                setPhotos(prev => {
-                    const updated = {
-                        ...prev,
-                        [finger]: { ...prev[finger], [pos]: reader.result }
-                    };
-                    focusNextMissingSlot(finger, pos, updated);
-                    return updated;
-                });
-                e.target.value = ''; // Reset input to allow recapturing
-                setIsCompressing(false);
+            reader.onloadend = async () => {
+                try {
+                    const uploadedUrl = await uploadSingleImage(reader.result);
+                    setPhotos(prev => {
+                        const updated = {
+                            ...prev,
+                            [finger]: { ...prev[finger], [pos]: uploadedUrl }
+                        };
+                        focusNextMissingSlot(finger, pos, updated);
+                        return updated;
+                    });
+                } catch (err) {
+                    alert("Failed to upload photo to server.");
+                } finally {
+                    e.target.value = ''; // Reset input to allow recapturing
+                    setIsCompressing(false);
+                }
             };
             reader.readAsDataURL(file); // Read raw file directly for maximum quality
         } catch (err) {
@@ -190,7 +216,7 @@ export default function AddFingerprint() {
 
                     {isCompressing && (
                         <div style={{ backgroundColor: 'var(--primary-color)', color: 'white', padding: '10px', borderRadius: '8px', marginBottom: '1rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <Loader2 size={16} style={{ animation: 'spin 2s linear infinite' }} /> Processing & Compressing High-Res Image...
+                            <Loader2 size={16} style={{ animation: 'spin 2s linear infinite' }} /> Uploading Image to Server...
                         </div>
                     )}
                     <div className="dashboard-grid">
