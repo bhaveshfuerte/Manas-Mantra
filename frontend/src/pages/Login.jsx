@@ -6,10 +6,12 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError('');
         try {
 
             const res = await fetch(`/api/auth/login`, {
@@ -25,13 +27,12 @@ export default function Login() {
                 localStorage.setItem('user', JSON.stringify(data.user));
                 navigate('/');
             } else {
-                alert('Invalid credentials');
+                const errData = await res.json().catch(() => null);
+                setError(errData?.message || 'Invalid credentials');
             }
         } catch (error) {
             console.error(error);
-            // fallback for demo
-            localStorage.setItem('token', 'fake-jwt-token');
-            navigate('/');
+            setError('Server connection failed. Please ensure the backend is running.');
         }
     };
 
@@ -39,6 +40,11 @@ export default function Login() {
         <div className="auth-container">
             <div className="auth-card">
                 <h1>Welcome Back</h1>
+                {error && (
+                    <div style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem', textAlign: 'center' }}>
+                        {error}
+                    </div>
+                )}
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
                         <label htmlFor="email">Email Address</label>

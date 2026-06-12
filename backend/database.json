@@ -15,7 +15,12 @@
       "id": "1773212109031",
       "name": "Fuerte Developers",
       "email": "bhaveshfuerte@gmail.com",
-      "password": "Bhavesh@123"
+      "password": "Bhavesh@123",
+      "role": "Super Admin",
+      "permissions": [
+        "all"
+      ],
+      "companyId": "all"
     },
     {
       "id": "1773212264593",

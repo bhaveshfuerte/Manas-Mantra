@@ -16,6 +16,7 @@ export default function Sidebar({ onClose, globalName, globalLogo }) {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         window.location.href = '/login';
     };
 
