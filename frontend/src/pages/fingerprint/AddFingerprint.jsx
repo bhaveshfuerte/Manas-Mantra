@@ -26,6 +26,7 @@ export default function AddFingerprint() {
     const [photos, setPhotos] = useState(() => getInitialPhotos());
 
     const [uploadingSlot, setUploadingSlot] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const fileInputRef = useRef(null);
     const webcamRef = useRef(null);
@@ -151,6 +152,7 @@ export default function AddFingerprint() {
         e.preventDefault();
         if (!formData.name) return alert("Please enter at least the candidate's name.");
 
+        setIsSaving(true);
         try {
             let loggedInUser = {};
             try {
@@ -182,6 +184,8 @@ export default function AddFingerprint() {
         } catch (error) {
             console.error("Fetch Error:", error);
             alert(`Error connecting to the server: ${error.message}`);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -271,9 +275,9 @@ export default function AddFingerprint() {
                 </div>
 
                 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                    <button type="submit" className="btn-primary" style={{ maxWidth: '400px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                        <Upload size={20} />
-                        Save Entire Record to Database
+                    <button type="submit" disabled={isSaving || !!uploadingSlot} className="btn-primary" style={{ maxWidth: '400px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                        {isSaving ? <Loader2 size={20} style={{ animation: 'spin 2s linear infinite' }} /> : <Upload size={20} />}
+                        {isSaving ? 'Saving Record...' : 'Save Entire Record to Database'}
                     </button>
                 </div>
             </form>

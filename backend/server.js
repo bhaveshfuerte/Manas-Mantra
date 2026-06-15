@@ -15,8 +15,11 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 app.use(cors());
-app.use(express.json({ limit: '500mb' }));
-app.use(express.urlencoded({ limit: '500mb', extended: true }));
+// Photos are uploaded one-by-one as binary to /upload-single, so JSON bodies
+// only ever carry small form data + image URLs. Keep these limits modest to
+// protect the 1GB EC2 box from memory spikes (was 500mb, which risked OOM).
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // JSON Database File persistence
