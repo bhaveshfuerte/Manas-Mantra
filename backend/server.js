@@ -147,11 +147,16 @@ app.get('/api/users', (req, res) => {
     res.status(200).json(filtered);
 });
 
-// Upload single photo immediately
-app.post('/api/fingerprints/upload-single', (req, res) => {
+// Upload single photo immediately.
+// The client compresses each image and sends it as raw binary (image/jpeg)
+// instead of base64 JSON — this avoids the ~33% base64 inflation that pushed
+// payloads past the proxy's 1MB limit and caused HTTP 413 errors.
+app.post('/api/fingerprints/upload-single', express.raw({ type: '*/*', limit: '25mb' }), (req, res) => {
     try {
-        const { imageBase64 } = req.body;
-        if (!imageBase64) return res.status(400).json({ message: 'No image provided' });
+        const imgBuffer = req.body;
+        if (!imgBuffer || !imgBuffer.length) {
+            return res.status(400).json({ message: 'No image provided' });
+        }
 
         const tempDir = path.join(__dirname, 'uploads', 'temp');
         if (!fs.existsSync(tempDir)) {
@@ -161,12 +166,6 @@ app.post('/api/fingerprints/upload-single', (req, res) => {
         const fileName = `fp_${Date.now()}_${Math.floor(Math.random() * 10000)}.jpg`;
         const filePath = path.join(tempDir, fileName);
 
-        const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-        if (!matches || matches.length !== 3) {
-            return res.status(400).json({ message: 'Invalid base64 string' });
-        }
-
-        const imgBuffer = Buffer.from(matches[2], 'base64');
         fs.writeFileSync(filePath, imgBuffer);
 
         const url = `/uploads/temp/${fileName}`;

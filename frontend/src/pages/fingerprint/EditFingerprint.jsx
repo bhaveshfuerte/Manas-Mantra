@@ -2,9 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Upload, X, Loader2, ArrowLeft } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ImageBlobReduce from 'image-blob-reduce';
-
-const reduce = new ImageBlobReduce();
+import { uploadSingleImage } from '../../utils/imageUpload';
 
 const FINGERS = [
     'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
@@ -87,17 +85,6 @@ export default function EditFingerprint() {
         }
     };
 
-    const uploadSingleImage = async (base64Str) => {
-        const res = await fetch('/api/fingerprints/upload-single', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: base64Str })
-        });
-        if (!res.ok) throw new Error("Failed to upload image");
-        const data = await res.json();
-        return data.url;
-    };
-
     const captureFromWebcam = useCallback(async () => {
         if (webcamRef.current) {
             const imageSrc = webcamRef.current.getScreenshot();
@@ -133,26 +120,16 @@ export default function EditFingerprint() {
         setUploadingSlot({ finger, pos });
 
         try {
-            const reducedBlob = await reduce.toBlob(file, { max: 2000 });
-            const reader = new FileReader();
-
-            reader.onloadend = async () => {
-                try {
-                    const uploadedUrl = await uploadSingleImage(reader.result);
-                    setPhotos(prev => ({
-                        ...prev,
-                        [finger]: { ...prev[finger], [pos]: uploadedUrl }
-                    }));
-                } catch (err) {
-                    alert("Failed to upload photo to server.");
-                } finally {
-                    e.target.value = '';
-                    setUploadingSlot(null);
-                }
-            };
-            reader.readAsDataURL(reducedBlob);
+            const uploadedUrl = await uploadSingleImage(file);
+            setPhotos(prev => ({
+                ...prev,
+                [finger]: { ...prev[finger], [pos]: uploadedUrl }
+            }));
         } catch (err) {
-            console.error("File read failed:", err);
+            console.error("Upload failed:", err);
+            alert("Failed to upload photo to server.");
+        } finally {
+            e.target.value = '';
             setUploadingSlot(null);
         }
     };

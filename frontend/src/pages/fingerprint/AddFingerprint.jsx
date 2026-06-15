@@ -1,9 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
-import ImageBlobReduce from 'image-blob-reduce';
-
-const reduce = new ImageBlobReduce();
+import { uploadSingleImage } from '../../utils/imageUpload';
 
 const FINGERS = [
     'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
@@ -59,17 +57,6 @@ export default function AddFingerprint() {
             setActiveWebcamCapture({ finger, pos });
             setIsModalOpen(true);
         }
-    };
-
-    const uploadSingleImage = async (base64Str) => {
-        const res = await fetch('/api/fingerprints/upload-single', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: base64Str })
-        });
-        if (!res.ok) throw new Error("Failed to upload image");
-        const data = await res.json();
-        return data.url;
     };
 
     const captureFromWebcam = useCallback(async () => {
@@ -136,30 +123,20 @@ export default function AddFingerprint() {
         setUploadingSlot({ finger, pos });
 
         try {
-            const reducedBlob = await reduce.toBlob(file, { max: 2000 });
-            const reader = new FileReader();
-
-            reader.onloadend = async () => {
-                try {
-                    const uploadedUrl = await uploadSingleImage(reader.result);
-                    setPhotos(prev => {
-                        const updated = {
-                            ...prev,
-                            [finger]: { ...prev[finger], [pos]: uploadedUrl }
-                        };
-                        focusNextMissingSlot(finger, pos, updated);
-                        return updated;
-                    });
-                } catch (err) {
-                    alert("Failed to upload photo to server.");
-                } finally {
-                    e.target.value = ''; // Reset input to allow recapturing
-                    setUploadingSlot(null);
-                }
-            };
-            reader.readAsDataURL(reducedBlob);
+            const uploadedUrl = await uploadSingleImage(file);
+            setPhotos(prev => {
+                const updated = {
+                    ...prev,
+                    [finger]: { ...prev[finger], [pos]: uploadedUrl }
+                };
+                focusNextMissingSlot(finger, pos, updated);
+                return updated;
+            });
         } catch (err) {
-            console.error("File read failed:", err);
+            console.error("Upload failed:", err);
+            alert("Failed to upload photo to server.");
+        } finally {
+            e.target.value = ''; // Reset input to allow recapturing
             setUploadingSlot(null);
         }
     };
