@@ -165,6 +165,12 @@ export default function EditFingerprint() {
 
     if (isLoading) return <div style={{ padding: '2rem' }}><Loader2 size={16} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /> Loading record for editing...</div>;
 
+    const totalSlots = FINGERS.length * POSITIONS.length;
+    const uploadedCount = FINGERS.reduce(
+        (acc, f) => acc + POSITIONS.reduce((a, p) => a + (photos[f][p] ? 1 : 0), 0),
+        0
+    );
+
     return (
         <div style={{ paddingBottom: '2rem' }}>
             <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -205,7 +211,28 @@ export default function EditFingerprint() {
                 </div>
 
                 <div className="content-card">
-                    <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Fingerprint Photos</h3>
+                    <h3 style={{ marginBottom: '1rem', color: 'var(--primary-color)' }}>Fingerprint Photos</h3>
+
+                    <div style={{
+                        position: 'sticky', top: 0, zIndex: 50,
+                        display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
+                        backgroundColor: '#f0f4ff', border: '1px solid var(--primary-color)',
+                        borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.5rem'
+                    }}>
+                        <span style={{ fontWeight: 'bold', color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>
+                            {uploadedCount} / {totalSlots} photos uploaded
+                        </span>
+                        <div style={{ flex: 1, minWidth: '100px', height: '8px', backgroundColor: '#dbe4ff', borderRadius: '999px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(uploadedCount / totalSlots) * 100}%`, height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.3s ease' }} />
+                        </div>
+                        {uploadingSlot && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--primary-color)', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                <Loader2 size={16} style={{ animation: 'spin 2s linear infinite' }} />
+                                Uploading {uploadingSlot.finger.replace('_', ' ')} {uploadingSlot.pos}...
+                            </span>
+                        )}
+                    </div>
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                         {FINGERS.map(finger => (
                             <div key={finger} className="finger-card">
