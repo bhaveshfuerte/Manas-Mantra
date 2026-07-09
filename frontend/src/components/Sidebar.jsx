@@ -37,7 +37,7 @@ export default function Sidebar({ onClose, globalName, globalLogo }) {
                 {hasAccess('dashboard') && (
                     <Link to="/" className={`menu-item ${isActive('/') ? 'active' : ''}`}>
                         <LayoutDashboard size={20} />
-                        Dashboard
+                        Manas-Matrix
                     </Link>
                 )}
 

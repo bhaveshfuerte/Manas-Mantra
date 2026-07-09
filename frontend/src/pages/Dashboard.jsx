@@ -57,8 +57,8 @@ export default function Dashboard() {
     return (
         <div>
             <div className="page-header">
-                <h1>Dashboard</h1>
-                <p>Welcome to ScannerApp centralized dashboard instance.</p>
+                <h1>Manas-Matrix</h1>
+                <p>Welcome to ScannerApp centralized Manas-Matrix instance.</p>
             </div>
 
             {loading ? (

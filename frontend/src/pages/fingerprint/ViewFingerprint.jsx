@@ -56,7 +56,7 @@ export default function ViewFingerprint() {
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h1>Record: {record.name}</h1>
-                    <p>Dashboard view of all biometric details and captured images.</p>
+                    <p>Manas-Matrix view of all biometric details and captured images.</p>
                 </div>
             </div>
 

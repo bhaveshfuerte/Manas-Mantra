@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const PERMISSIONS_LIST = [
-    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'dashboard', label: 'Manas-Matrix' },
     { id: 'add-company', label: 'Add Company' },
     { id: 'all-company', label: 'All Companies' },
     { id: 'add-user', label: 'Add Users' },
@@ -163,7 +163,7 @@ export default function AddUser() {
                         )}
                         {loggedInUser.role === 'Super Admin' && formData.role === 'Super Admin' && (
                             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                <label>Dashboard & PDF Logo</label>
+                                <label>Manas-Matrix & PDF Logo</label>
                                 <input type="file" accept="image/*" className="form-input" onChange={(e) => {
                                     const file = e.target.files[0];
                                     if (file) {

@@ -85,7 +85,7 @@ export default function AllUsers() {
                                         ? 'Full Access'
                                         : (u.permissions?.map(pId => {
                                             const match = [
-                                                { id: 'dashboard', label: 'Dashboard' },
+                                                { id: 'dashboard', label: 'Manas-Matrix' },
                                                 { id: 'add-company', label: 'Add Company' },
                                                 { id: 'all-company', label: 'All Companies' },
                                                 { id: 'add-user', label: 'Add Users' },
