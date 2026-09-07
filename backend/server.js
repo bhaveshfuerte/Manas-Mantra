@@ -269,9 +269,23 @@ app.delete('/api/fingerprints/:id', (req, res) => {
 
 // Serve frontend static files in production
 const distPath = path.join(__dirname, '../frontend/dist');
-app.use(express.static(distPath));
+// Content-hashed build assets (filename changes whenever content does) can be cached forever.
+app.use('/assets', express.static(path.join(distPath, 'assets'), {
+    maxAge: '1y',
+    immutable: true
+}));
+// index.html / sw.js / registerSW.js / manifest must always be revalidated so browsers
+// pick up the current asset hashes right after a deploy instead of a stale reference.
+app.use(express.static(distPath, {
+    setHeaders: (res, filePath) => {
+        if (/\.(html|webmanifest)$/.test(filePath) || /\/(sw|registerSW)\.js$/.test(filePath)) {
+            res.setHeader('Cache-Control', 'no-cache');
+        }
+    }
+}));
 app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+        res.set('Cache-Control', 'no-cache');
         res.sendFile(path.join(distPath, 'index.html'));
     } else {
         next();
