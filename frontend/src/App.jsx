@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import RequirePermission from './components/RequirePermission';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -24,18 +25,18 @@ function App() {
 
         {/* Protected Routes with Sidebar via Layout */}
         <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="company/add-company" element={<AddCompany />} />
-          <Route path="company/all-company" element={<AllCompany />} />
-          <Route path="company/edit-company" element={<EditCompany />} />
-          <Route path="company/add-user" element={<AddUser />} />
-          <Route path="company/all-users" element={<AllUsers />} />
+          <Route index element={<RequirePermission modules="dashboard"><Dashboard /></RequirePermission>} />
+          <Route path="company/add-company" element={<RequirePermission modules="add-company"><AddCompany /></RequirePermission>} />
+          <Route path="company/all-company" element={<RequirePermission modules="all-company"><AllCompany /></RequirePermission>} />
+          <Route path="company/edit-company" element={<RequirePermission modules="all-company"><EditCompany /></RequirePermission>} />
+          <Route path="company/add-user" element={<RequirePermission modules="add-user"><AddUser /></RequirePermission>} />
+          <Route path="company/all-users" element={<RequirePermission modules="all-users"><AllUsers /></RequirePermission>} />
 
-          <Route path="fingerprint/add" element={<AddFingerprint />} />
-          <Route path="fingerprint/all" element={<AllFingerprints />} />
-          <Route path="fingerprint/view/:id" element={<ViewFingerprint />} />
-          <Route path="fingerprint/edit/:id" element={<EditFingerprint />} />
-          <Route path="admin" element={<AdminSettings />} />
+          <Route path="fingerprint/add" element={<RequirePermission modules="add-fingerprint"><AddFingerprint /></RequirePermission>} />
+          <Route path="fingerprint/all" element={<RequirePermission modules="all-fingerprints"><AllFingerprints /></RequirePermission>} />
+          <Route path="fingerprint/view/:id" element={<RequirePermission modules="all-fingerprints"><ViewFingerprint /></RequirePermission>} />
+          <Route path="fingerprint/edit/:id" element={<RequirePermission modules="all-fingerprints"><EditFingerprint /></RequirePermission>} />
+          <Route path="admin" element={<RequirePermission requireSuperAdmin><AdminSettings /></RequirePermission>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

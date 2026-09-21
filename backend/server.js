@@ -244,7 +244,7 @@ app.put('/api/fingerprints/:id', (req, res) => {
     const { id } = req.params;
     const index = db.fingerprints.findIndex(f => f.id === id);
     if (index === -1) return res.status(404).json({ message: 'Fingerprint record not found' });
-    
+
     db.fingerprints[index] = { ...db.fingerprints[index], ...req.body, updatedAt: new Date() };
     saveDb();
     res.status(200).json({ message: 'Fingerprint record updated', fingerprint: db.fingerprints[index] });
@@ -254,7 +254,7 @@ app.delete('/api/fingerprints/:id', (req, res) => {
     const { id } = req.params;
     const index = db.fingerprints.findIndex(f => f.id === id);
     if (index === -1) return res.status(404).json({ message: 'Fingerprint record not found' });
-    
+
     // Optionally delete the physical folder too
     const record = db.fingerprints[index];
     const dirPath = path.join(__dirname, 'uploads', 'fingerprints', record.name.replace(/\s+/g, '_') + '_' + record.id);

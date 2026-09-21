@@ -11,7 +11,7 @@ export default function Sidebar({ onClose, globalName, globalLogo }) {
     } catch (e) {
         user = null;
     }
-    const permissions = user?.permissions || ['all']; // Provide default fallback to avoid blank screen
+    const permissions = user?.permissions || []; // Fail closed: no permissions data means no access, not full access
     const hasAccess = (mod) => permissions.includes('all') || permissions.includes(mod);
 
     const handleLogout = () => {

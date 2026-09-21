@@ -26,10 +26,15 @@ export default function AllUsers() {
             .catch(err => console.error("Error fetching users:", err));
     }, []);
 
+    // `?.` only guards against null/undefined — a record whose name/email/role
+    // came back as some other non-string value (e.g. a number) still throws on
+    // .toLowerCase(). Coerce to string first so any value is safely searchable.
+    const asText = (val) => (val == null ? '' : String(val)).toLowerCase();
+    const query = searchQuery.toLowerCase();
     const displayedUsers = users.filter(u =>
-        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.role?.toLowerCase().includes(searchQuery.toLowerCase())
+        asText(u.name).includes(query) ||
+        asText(u.email).includes(query) ||
+        asText(u.role).includes(query)
     );
 
     return (
