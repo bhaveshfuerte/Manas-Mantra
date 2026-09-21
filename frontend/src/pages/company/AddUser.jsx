@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 const PERMISSIONS_LIST = [
     { id: 'dashboard', label: 'Manas-Matrix' },
@@ -27,6 +28,7 @@ export default function AddUser() {
     });
 
     const [permissions, setPermissions] = useState(editUser?.permissions || []);
+    const [showPassword, setShowPassword] = useState(false);
     const [companies, setCompanies] = useState([]);
 
     const loggedInUser = (() => {
@@ -140,7 +142,36 @@ export default function AddUser() {
                         </div>
                         <div className="form-group">
                             <label>Password</label>
-                            <input type="password" name="password" className="form-input" value={formData.password} onChange={handleChange} required />
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    className="form-input"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    style={{ paddingRight: '3rem' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '0.75rem',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-secondary)',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        padding: '0'
+                                    }}
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
                         <div className="form-group">
                             <label>System Role</label>
