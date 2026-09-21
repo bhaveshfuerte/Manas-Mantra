@@ -3,10 +3,38 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+// Signs/verifies login tokens. Falls back to a random secret generated at
+// startup (rather than a hardcoded one) since this repo is public — a fixed
+// fallback would let anyone forge a token for any user id. Set AUTH_SECRET in
+// .env so logins survive a server restart instead of everyone being signed out.
+let AUTH_SECRET = process.env.AUTH_SECRET;
+if (!AUTH_SECRET) {
+    AUTH_SECRET = crypto.randomBytes(32).toString('hex');
+    console.warn('AUTH_SECRET not set in .env — using a random secret for this run. Every user will need to log in again after the next restart until AUTH_SECRET is set.');
+}
+
+const signToken = (userId) => {
+    const sig = crypto.createHmac('sha256', AUTH_SECRET).update(userId).digest('hex');
+    return `${userId}.${sig}`;
+};
+
+const verifyToken = (token) => {
+    if (!token || typeof token !== 'string' || !token.includes('.')) return null;
+    const idx = token.lastIndexOf('.');
+    const userId = token.slice(0, idx);
+    const sig = token.slice(idx + 1);
+    const expectedSig = crypto.createHmac('sha256', AUTH_SECRET).update(userId).digest('hex');
+    const sigBuf = Buffer.from(sig, 'hex');
+    const expectedBuf = Buffer.from(expectedSig, 'hex');
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) return null;
+    return userId;
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,8 +108,23 @@ app.post('/api/auth/login', (req, res) => {
     const { email, password } = req.body;
     const user = db.users.find(u => u.email === email && u.password === password);
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-    res.status(200).json({ message: 'Login successful', token: 'fake-jwt-token', user });
+    res.status(200).json({ message: 'Login successful', token: signToken(user.id), user });
 });
+
+// Every route below this line requires a valid token, and non-Super-Admin
+// users are confined to their own companyId — enforced here server-side
+// rather than trusted from client-sent query params/body, since either can
+// be edited freely in the browser (devtools/curl) regardless of what the UI shows.
+const authenticate = (req, res, next) => {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    const userId = token && verifyToken(token);
+    const user = userId ? db.users.find(u => u.id === userId) : null;
+    if (!user) return res.status(401).json({ message: 'Not authenticated' });
+    req.authUser = user;
+    next();
+};
+app.use('/api', authenticate);
 
 // Company / Users Mock Routes
 app.post('/api/companies', (req, res) => {
@@ -91,7 +134,10 @@ app.post('/api/companies', (req, res) => {
     res.status(201).json({ message: 'Company created', company });
 });
 app.get('/api/companies', (req, res) => {
-    const { companyId } = req.query;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
+    // Non-Super-Admin can only ever see their own company, regardless of what
+    // companyId the request asks for.
+    const companyId = isSuperAdmin ? req.query.companyId : req.authUser.companyId;
     let filtered = db.companies;
     if (companyId) {
         filtered = filtered.filter(c => c.id === companyId);
@@ -101,6 +147,10 @@ app.get('/api/companies', (req, res) => {
 
 app.put('/api/companies/:id', (req, res) => {
     const { id } = req.params;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
+    if (!isSuperAdmin && req.authUser.companyId !== id) {
+        return res.status(403).json({ message: 'You do not have access to this company' });
+    }
     const index = db.companies.findIndex(c => c.id === id);
     if (index === -1) return res.status(404).json({ message: 'Company not found' });
     db.companies[index] = { ...db.companies[index], ...req.body };
@@ -110,6 +160,7 @@ app.put('/api/companies/:id', (req, res) => {
 
 app.post('/api/users', (req, res) => {
     const { name, email, password, role, companyId, permissions } = req.body;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
 
     if (db.users.find(u => u.email === email)) {
         return res.status(400).json({ message: 'Email already exists' });
@@ -121,7 +172,9 @@ app.post('/api/users', (req, res) => {
         email,
         password,
         role: role || 'User',
-        companyId: companyId || null,
+        // A non-Super-Admin can only ever create users inside their own company,
+        // no matter what companyId the request body claims.
+        companyId: isSuperAdmin ? (companyId || null) : req.authUser.companyId,
         permissions: permissions || []
     };
     db.users.push(newUser);
@@ -132,17 +185,24 @@ app.post('/api/users', (req, res) => {
 // Edit user
 app.put('/api/users/:id', (req, res) => {
     const { id } = req.params;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
     const index = db.users.findIndex(u => u.id === id);
     if (index === -1) return res.status(404).json({ message: 'User not found' });
+    if (!isSuperAdmin && db.users[index].companyId !== req.authUser.companyId) {
+        return res.status(403).json({ message: 'You do not have access to this user' });
+    }
 
-    // Merge new fields
-    db.users[index] = { ...db.users[index], ...req.body };
+    // Merge new fields, but a non-Super-Admin can't move a user to a different company.
+    const update = { ...req.body };
+    if (!isSuperAdmin) delete update.companyId;
+    db.users[index] = { ...db.users[index], ...update };
     saveDb();
     res.status(200).json({ message: 'User updated', user: db.users[index] });
 });
 
 app.get('/api/users', (req, res) => {
-    const { companyId } = req.query;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
+    const companyId = isSuperAdmin ? req.query.companyId : req.authUser.companyId;
     let filtered = db.users;
     if (companyId) {
         filtered = filtered.filter(u => u.companyId === companyId);
@@ -182,7 +242,10 @@ app.post('/api/fingerprints/upload-single', express.raw({ type: '*/*', limit: '2
 // Real Fingerprint API
 app.post('/api/fingerprints', (req, res) => {
     try {
-        const { name, age, study, fatherName, contactDetails, photos, userId, companyId } = req.body;
+        const { name, age, study, fatherName, contactDetails, photos, userId } = req.body;
+        const isSuperAdmin = req.authUser.role === 'Super Admin';
+        // A non-Super-Admin can only ever file a record under their own company.
+        const companyId = isSuperAdmin ? (req.body.companyId || 'unassigned') : req.authUser.companyId;
 
         const recordId = Date.now().toString();
         const dirPath = path.join(__dirname, 'uploads', 'fingerprints', name.replace(/\s+/g, '_') + '_' + recordId);
@@ -221,7 +284,9 @@ app.post('/api/fingerprints', (req, res) => {
 });
 
 app.get('/api/fingerprints', (req, res) => {
-    const { companyId, userId } = req.query;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
+    const companyId = isSuperAdmin ? req.query.companyId : req.authUser.companyId;
+    const { userId } = req.query;
     let filtered = db.fingerprints;
 
     if (companyId) {
@@ -237,23 +302,37 @@ app.get('/api/fingerprints', (req, res) => {
 app.get('/api/fingerprints/:id', (req, res) => {
     const record = db.fingerprints.find(f => f.id === req.params.id);
     if (!record) return res.status(404).json({ message: 'Fingerprint record not found' });
+    if (req.authUser.role !== 'Super Admin' && record.companyId !== req.authUser.companyId) {
+        return res.status(403).json({ message: 'You do not have access to this record' });
+    }
     res.status(200).json(record);
 });
 
 app.put('/api/fingerprints/:id', (req, res) => {
     const { id } = req.params;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
     const index = db.fingerprints.findIndex(f => f.id === id);
     if (index === -1) return res.status(404).json({ message: 'Fingerprint record not found' });
+    if (!isSuperAdmin && db.fingerprints[index].companyId !== req.authUser.companyId) {
+        return res.status(403).json({ message: 'You do not have access to this record' });
+    }
 
-    db.fingerprints[index] = { ...db.fingerprints[index], ...req.body, updatedAt: new Date() };
+    // A non-Super-Admin can't move a record to a different company.
+    const update = { ...req.body };
+    if (!isSuperAdmin) delete update.companyId;
+    db.fingerprints[index] = { ...db.fingerprints[index], ...update, updatedAt: new Date() };
     saveDb();
     res.status(200).json({ message: 'Fingerprint record updated', fingerprint: db.fingerprints[index] });
 });
 
 app.delete('/api/fingerprints/:id', (req, res) => {
     const { id } = req.params;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
     const index = db.fingerprints.findIndex(f => f.id === id);
     if (index === -1) return res.status(404).json({ message: 'Fingerprint record not found' });
+    if (!isSuperAdmin && db.fingerprints[index].companyId !== req.authUser.companyId) {
+        return res.status(403).json({ message: 'You do not have access to this record' });
+    }
 
     // Optionally delete the physical folder too
     const record = db.fingerprints[index];
