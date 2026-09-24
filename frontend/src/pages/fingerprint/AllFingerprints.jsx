@@ -267,18 +267,20 @@ export default function AllFingerprints() {
         const col2 = 65;
         doc.text("Company", col1, detailsY); doc.text(`: ${compName}`, col2, detailsY);
         doc.text("Name", col1, detailsY + 8); doc.text(`: ${record.name}`, col2, detailsY + 8);
-        doc.text("Age", col1, detailsY + 16); doc.text(`: ${record.age || 'N/A'}`, col2, detailsY + 16);
-        doc.text("Study/Occupation", col1, detailsY + 24); doc.text(`: ${record.study || 'N/A'}`, col2, detailsY + 24);
-        doc.text("Father's Name", col1, detailsY + 32); doc.text(`: ${record.fatherName || 'N/A'}`, col2, detailsY + 32);
-        doc.text("Contact", col1, detailsY + 40); doc.text(`: ${record.contactDetails || 'N/A'}`, col2, detailsY + 40);
-        doc.text("Scan Date", col1, detailsY + 48); doc.text(`: ${new Date(record.scannedAt).toLocaleDateString()}`, col2, detailsY + 48);
+        doc.text("Birth Date", col1, detailsY + 16); doc.text(`: ${record.birthDate || 'N/A'}`, col2, detailsY + 16);
+        doc.text("Gender", col1, detailsY + 24); doc.text(`: ${record.gender || 'N/A'}`, col2, detailsY + 24);
+        doc.text("City", col1, detailsY + 32); doc.text(`: ${record.city || 'N/A'}`, col2, detailsY + 32);
+        doc.text("Study/Occupation", col1, detailsY + 40); doc.text(`: ${record.study || 'N/A'}`, col2, detailsY + 40);
+        doc.text("Father's Name", col1, detailsY + 48); doc.text(`: ${record.fatherName || 'N/A'}`, col2, detailsY + 48);
+        doc.text("Contact", col1, detailsY + 56); doc.text(`: ${record.contactDetails || 'N/A'}`, col2, detailsY + 56);
+        doc.text("Scan Date", col1, detailsY + 64); doc.text(`: ${new Date(record.scannedAt).toLocaleDateString()}`, col2, detailsY + 64);
 
         // Divider Line Below Info
         doc.setDrawColor(200, 190, 180);
         doc.setLineWidth(1);
-        doc.line(20, detailsY + 56, pageWidth - 20, detailsY + 56);
+        doc.line(20, detailsY + 72, pageWidth - 20, detailsY + 72);
 
-        let currentY = detailsY + 62;
+        let currentY = detailsY + 78;
         const fingers = [
             'Left_Thumb', 'Left_Index', 'Left_Middle', 'Left_Ring', 'Left_Little',
             'Right_Thumb', 'Right_Index', 'Right_Middle', 'Right_Ring', 'Right_Little'
@@ -446,7 +448,9 @@ export default function AllFingerprints() {
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Age</th>
+                            <th>Birth Date</th>
+                            <th>Gender</th>
+                            <th>City</th>
                             <th>Contact</th>
                             <th>Scan Date</th>
                             <th>Actions</th>
@@ -461,8 +465,14 @@ export default function AllFingerprints() {
                                 <td data-label="Name">
                                     <div style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{record.name}</div>
                                 </td>
-                                <td data-label="Age">
-                                    <div>{record.age || '-'}</div>
+                                <td data-label="Birth Date">
+                                    <div>{record.birthDate || '-'}</div>
+                                </td>
+                                <td data-label="Gender">
+                                    <div>{record.gender || '-'}</div>
+                                </td>
+                                <td data-label="City">
+                                    <div>{record.city || '-'}</div>
                                 </td>
                                 <td data-label="Contact">
                                     <div style={{ fontSize: '0.85rem' }}>{record.contactDetails || '-'}</div>

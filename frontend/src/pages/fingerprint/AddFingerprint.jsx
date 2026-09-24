@@ -20,7 +20,7 @@ const getInitialPhotos = () => {
 export default function AddFingerprint() {
     const [formData, setFormData] = useState(() => {
         const savedForm = localStorage.getItem('fp_form_data');
-        return savedForm ? JSON.parse(savedForm) : { name: '', age: '', study: '', fatherName: '', contactDetails: '' };
+        return savedForm ? JSON.parse(savedForm) : { name: '', gender: '', birthDate: '', city: '', study: '', fatherName: '', contactDetails: '' };
     });
 
     const [photos, setPhotos] = useState(() => getInitialPhotos());
@@ -45,6 +45,13 @@ export default function AddFingerprint() {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Gender is single-choice, but rendered as checkboxes (per request) rather than
+    // radios — clicking one selects it and deselects any other; clicking the
+    // selected one again clears it.
+    const handleGenderToggle = (value) => {
+        setFormData(prev => ({ ...prev, gender: prev.gender === value ? '' : value }));
     };
 
     const triggerCamera = (finger, pos) => {
@@ -174,7 +181,7 @@ export default function AddFingerprint() {
             });
             if (res.ok) {
                 alert('All details and photos successfully saved in high quality to the server!');
-                setFormData({ name: '', age: '', study: '', fatherName: '', contactDetails: '' });
+                setFormData({ name: '', gender: '', birthDate: '', city: '', study: '', fatherName: '', contactDetails: '' });
                 setPhotos(getInitialPhotos());
                 localStorage.removeItem('fp_form_data');
             } else {
@@ -209,23 +216,43 @@ export default function AddFingerprint() {
                     <div className="dashboard-grid">
                         <div className="form-group">
                             <label>Full Name</label>
-                            <input type="text" name="name" className="form-input" value={formData.name} onChange={handleInputChange} required />
+                            <input type="text" name="name" className="form-input" placeholder="Enter full name" value={formData.name} onChange={handleInputChange} required />
                         </div>
                         <div className="form-group">
-                            <label>Age</label>
-                            <input type="number" name="age" className="form-input" value={formData.age} onChange={handleInputChange} />
+                            <label>Birth Date</label>
+                            <input type="date" name="birthDate" className="form-input" placeholder="dd-mm-yyyy" value={formData.birthDate} onChange={handleInputChange} />
+                        </div>
+                        <div className="form-group">
+                            <label>City</label>
+                            <input type="text" name="city" className="form-input" placeholder="Enter city" value={formData.city} onChange={handleInputChange} />
                         </div>
                         <div className="form-group">
                             <label>Study / Occupation</label>
-                            <input type="text" name="study" className="form-input" value={formData.study} onChange={handleInputChange} />
+                            <input type="text" name="study" className="form-input" placeholder="Enter study or occupation" value={formData.study} onChange={handleInputChange} />
                         </div>
                         <div className="form-group">
                             <label>Father's Name</label>
-                            <input type="text" name="fatherName" className="form-input" value={formData.fatherName} onChange={handleInputChange} />
+                            <input type="text" name="fatherName" className="form-input" placeholder="Enter father's name" value={formData.fatherName} onChange={handleInputChange} />
                         </div>
                         <div className="form-group">
                             <label>Contact Details</label>
-                            <input type="text" name="contactDetails" className="form-input" value={formData.contactDetails} onChange={handleInputChange} />
+                            <input type="text" name="contactDetails" className="form-input" placeholder="Enter phone number" value={formData.contactDetails} onChange={handleInputChange} />
+                        </div>
+                        <div className="form-group">
+                            <label>Gender</label>
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                                {['Male', 'Female', 'Other'].map(g => (
+                                    <label key={g} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            className="round-checkbox"
+                                            checked={formData.gender === g}
+                                            onChange={() => handleGenderToggle(g)}
+                                        />
+                                        {g}
+                                    </label>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -466,3 +466,33 @@ a:hover {
   font-weight: 600;
   font-size: 0.9rem;
 }
+
+.round-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background-color: var(--card-bg, #fff);
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+
+.round-checkbox:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.round-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #fff;
+  transform: translate(-50%, -50%);
+}

@@ -242,7 +242,7 @@ app.post('/api/fingerprints/upload-single', express.raw({ type: '*/*', limit: '2
 // Real Fingerprint API
 app.post('/api/fingerprints', (req, res) => {
     try {
-        const { name, age, study, fatherName, contactDetails, photos, userId } = req.body;
+        const { name, gender, birthDate, city, study, fatherName, contactDetails, photos, userId } = req.body;
         const isSuperAdmin = req.authUser.role === 'Super Admin';
         // A non-Super-Admin can only ever file a record under their own company.
         const companyId = isSuperAdmin ? (req.body.companyId || 'unassigned') : req.authUser.companyId;
@@ -268,7 +268,7 @@ app.post('/api/fingerprints', (req, res) => {
             id: recordId,
             userId: userId || 'anonymous',
             companyId: companyId || 'unassigned',
-            name, age, study, fatherName, contactDetails,
+            name, gender, birthDate, city, study, fatherName, contactDetails,
             photosUrl: photosUrl,
             photos: {}, // Retained empty for backwards compatibility shape
             scannedAt: new Date()

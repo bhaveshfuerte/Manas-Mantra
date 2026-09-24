@@ -63,7 +63,9 @@ export default function ViewFingerprint() {
             <div className="content-card" style={{ marginBottom: '2rem' }}>
                 <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--primary-color)' }}>Personal Details</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-                    <div><strong style={{ color: 'var(--text-secondary)' }}>Age:</strong> {record.age || '-'}</div>
+                    <div><strong style={{ color: 'var(--text-secondary)' }}>Birth Date:</strong> {record.birthDate || '-'}</div>
+                    <div><strong style={{ color: 'var(--text-secondary)' }}>Gender:</strong> {record.gender || '-'}</div>
+                    <div><strong style={{ color: 'var(--text-secondary)' }}>City:</strong> {record.city || '-'}</div>
                     <div><strong style={{ color: 'var(--text-secondary)' }}>Occupation:</strong> {record.study || '-'}</div>
                     <div><strong style={{ color: 'var(--text-secondary)' }}>Father's Name:</strong> {record.fatherName || '-'}</div>
                     <div><strong style={{ color: 'var(--text-secondary)' }}>Contact:</strong> {record.contactDetails || '-'}</div>
