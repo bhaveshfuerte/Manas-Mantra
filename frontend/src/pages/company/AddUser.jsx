@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import BackButton from '../../components/BackButton';
 
 const PERMISSIONS_LIST = [
     { id: 'dashboard', label: 'Manas-Matrix' },
@@ -116,60 +117,44 @@ export default function AddUser() {
 
     return (
         <div style={{ paddingBottom: '2rem' }}>
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="page-header">
                 <div>
                     <h1>{isViewMode ? 'View User' : isEditMode ? 'Edit User' : 'Add New User'}</h1>
                     <p>{isViewMode ? 'Viewing user details and permissions.' : isEditMode ? 'Modify existing user details and permissions.' : 'Register a new system user and configure their permissions.'}</p>
                 </div>
-                {isViewMode && (
-                    <button className="btn-secondary" onClick={() => navigate(-1)} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}>
-                        Back
-                    </button>
-                )}
+                {isEditMode && <BackButton to="/company/all-users" />}
             </div>
 
-            <div className="content-card" style={{ maxWidth: '800px' }}>
+            <div className="content-card form-card">
                 <form onSubmit={handleSubmit}>
                     <fieldset disabled={isViewMode} style={{ border: 'none', padding: 0, margin: 0 }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                            <div className="form-group">
+                        <div className="form-grid">
+                        <div className="form-group">
                             <label>User Full Name</label>
-                            <input type="text" name="name" className="form-input" value={formData.name} onChange={handleChange} required />
+                            <input type="text" name="name" className="form-input" placeholder="Enter full name" value={formData.name} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
                             <label>Email Address</label>
-                            <input type="email" name="email" className="form-input" value={formData.email} onChange={handleChange} required />
+                            <input type="email" name="email" className="form-input" placeholder="Enter email address" value={formData.email} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
                             <label>Password</label>
-                            <div style={{ position: 'relative' }}>
+                            <div className="password-field">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     name="password"
                                     className="form-input"
+                                    placeholder="Enter password"
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
-                                    style={{ paddingRight: '3rem' }}
                                 />
                                 <button
                                     type="button"
+                                    className="password-toggle"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    style={{
-                                        position: 'absolute',
-                                        right: '0.75rem',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--text-secondary)',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        padding: '0'
-                                    }}
                                 >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    {showPassword ? <EyeOff /> : <Eye />}
                                 </button>
                             </div>
                         </div>
@@ -182,7 +167,7 @@ export default function AddUser() {
                             </select>
                         </div>
                         {formData.role !== 'Super Admin' && (
-                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                            <div className="form-group full">
                                 <label>Assigned Company / Branch</label>
                                 <select name="companyId" className="form-input" value={formData.companyId} onChange={handleChange} required>
                                     <option value="">-- Select a Company --</option>
@@ -193,7 +178,7 @@ export default function AddUser() {
                             </div>
                         )}
                         {loggedInUser.role === 'Super Admin' && formData.role === 'Super Admin' && (
-                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                            <div className="form-group full">
                                 <label>Manas-Matrix & PDF Logo</label>
                                 <input type="file" accept="image/*" className="form-input" onChange={(e) => {
                                     const file = e.target.files[0];
@@ -236,11 +221,11 @@ export default function AddUser() {
                     </div>
 
                     {formData.role !== 'Super Admin' && (
-                        <div className="form-group" style={{ marginBottom: '2rem' }}>
-                            <label style={{ marginBottom: '1rem', display: 'block' }}>Module Access Permissions</label>
-                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        <div className="form-group">
+                            <label>Module Access Permissions</label>
+                            <div className="check-group">
                                 {accessiblePermissions.map(mod => (
-                                    <label key={mod.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', backgroundColor: 'var(--card-bg)', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                    <label key={mod.id} className="check-tile">
                                         <input
                                             type="checkbox"
                                             checked={permissions.includes(mod.id)}
@@ -254,7 +239,11 @@ export default function AddUser() {
                     )}
 
                     </fieldset>
-                    {!isViewMode && <button type="submit" className="btn-primary">{isEditMode ? 'Save Changes' : 'Save Secure User'}</button>}
+                    {!isViewMode && (
+                        <div className="form-actions">
+                            <button type="submit" className="btn-primary">{isEditMode ? 'Save Changes' : 'Save User'}</button>
+                        </div>
+                    )}
                 </form>
             </div>
         </div>

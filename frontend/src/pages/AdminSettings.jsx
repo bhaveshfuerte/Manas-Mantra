@@ -86,15 +86,10 @@ export default function AdminSettings() {
                 body: JSON.stringify(companyDetails)
             });
             if (res.ok) {
+                // Keep the dropdown's copy in sync, otherwise switching to another
+                // company and back shows (and would re-save) the old, pre-save data.
+                setCompanies(prev => prev.map(c => c.id === companyDetails.id ? companyDetails : c));
                 alert(`Company Settings Updated Successfully!`);
-                const localUser = JSON.parse(localStorage.getItem('user'));
-                if (localUser) {
-                    if (localUser.companyId === companyDetails.id || (localUser.role === 'Super Admin' && companies[0]?.id === companyDetails.id)) {
-                        localUser.logoBase64 = companyDetails.logoBase64;
-                        localStorage.setItem('user', JSON.stringify(localUser));
-                        window.location.reload();
-                    }
-                }
             } else {
                 const errText = await res.text();
                 alert(`Failed to update company settings. Server returned: ${res.status} ${errText}`);
@@ -109,8 +104,8 @@ export default function AdminSettings() {
 
     if (loggedInUser.role !== 'Super Admin') {
         return (
-            <div style={{ padding: '2rem' }}>
-                <div className="page-header">
+            <div className="page-header">
+                <div>
                     <h1>Access Denied</h1>
                     <p>Only the System Super Admin has the required clearance to modify core company root settings.</p>
                 </div>
@@ -120,8 +115,8 @@ export default function AdminSettings() {
 
     if (!companyDetails.id) {
         return (
-            <div style={{ padding: '2rem' }}>
-                <div className="page-header">
+            <div className="page-header">
+                <div>
                     <h1>Admin Settings</h1>
                     <p>Admin Settings page not edit data of company this page is empty only Admin can edit their data.</p>
                 </div>
@@ -132,13 +127,15 @@ export default function AdminSettings() {
     return (
         <div style={{ paddingBottom: '2rem' }}>
             <div className="page-header">
-                <h1>Admin Settings</h1>
-                <p>Edit your core company details and settings.</p>
+                <div>
+                    <h1>Admin Settings</h1>
+                    <p>Edit your core company details and settings.</p>
+                </div>
             </div>
 
-            <div className="content-card" style={{ maxWidth: '600px' }}>
+            <div className="content-card form-card">
                 {loggedInUser.role === 'Super Admin' && companies.length > 1 && (
-                    <div className="form-group" style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div className="form-group" style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
                         <label>Select Company to Edit</label>
                         <select
                             className="form-input"
@@ -155,20 +152,20 @@ export default function AdminSettings() {
                     </div>
                 )}
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                        <label style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>Company Logo</label>
+                    <div className="form-group" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                        <label style={{ width: '100%', textAlign: 'left' }}>Company Logo</label>
                         <div
                             style={{
                                 width: '150px',
                                 height: '150px',
-                                border: '2px dashed #cbd5e1',
+                                border: '2px dashed var(--border-color)',
                                 borderRadius: '12px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 position: 'relative',
                                 overflow: 'hidden',
-                                backgroundColor: '#f8fafc'
+                                backgroundColor: 'var(--input-bg)'
                             }}
                         >
                             {companyDetails.logoBase64 ? (
@@ -183,7 +180,7 @@ export default function AdminSettings() {
                                     </button>
                                 </>
                             ) : (
-                                <div onClick={() => fileInputRef.current.click()} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#64748b' }}>
+                                <div onClick={() => fileInputRef.current.click()} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--text-secondary)' }}>
                                     <ImageIcon size={32} style={{ marginBottom: '8px' }} />
                                     <span style={{ fontSize: '0.8rem' }}>Upload Logo</span>
                                 </div>
@@ -199,26 +196,30 @@ export default function AdminSettings() {
                         <button
                             type="button"
                             className="btn-secondary"
-                            style={{ marginTop: '1rem', width: 'auto', padding: '0.4rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            style={{ marginTop: '1rem' }}
                             onClick={() => fileInputRef.current.click()}
                         >
-                            <Upload size={14} /> Change Logo
+                            <Upload /> Change Logo
                         </button>
                     </div>
 
-                    <div className="form-group">
-                        <label>Company Name</label>
-                        <input type="text" name="name" className="form-input" value={companyDetails.name} onChange={handleChange} required />
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label>Company Name</label>
+                            <input type="text" name="name" className="form-input" placeholder="Enter company name" value={companyDetails.name} onChange={handleChange} required />
+                        </div>
+                        <div className="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contactNumber" className="form-input" placeholder="Enter contact number" value={companyDetails.contactNumber} onChange={handleChange} required />
+                        </div>
+                        <div className="form-group full">
+                            <label>Address</label>
+                            <textarea name="address" className="form-input" rows="4" placeholder="Enter full address" value={companyDetails.address} onChange={handleChange} required></textarea>
+                        </div>
                     </div>
-                    <div className="form-group">
-                        <label>Contact Number</label>
-                        <input type="text" name="contactNumber" className="form-input" value={companyDetails.contactNumber} onChange={handleChange} required />
+                    <div className="form-actions">
+                        <button type="submit" className="btn-primary">Save Changes</button>
                     </div>
-                    <div className="form-group">
-                        <label>Address</label>
-                        <textarea name="address" className="form-input" rows="4" value={companyDetails.address} onChange={handleChange} required></textarea>
-                    </div>
-                    <button type="submit" className="btn-primary mt-4">Save Changes</button>
                 </form>
             </div>
         </div>

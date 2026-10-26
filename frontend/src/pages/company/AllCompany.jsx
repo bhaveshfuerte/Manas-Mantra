@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 
 export default function AllCompany() {
     const [companies, setCompanies] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
-    useEffect(() => {
+    let loggedInUser = {};
+    try {
+        loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
+    } catch (e) {
+        console.error("Corrupted user");
+    }
+    const isSuperAdmin = loggedInUser.role === 'Super Admin';
 
-        let loggedInUser = {};
-        try {
-            loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
-        } catch (e) {
-            console.error("Corrupted user");
-        }
-
+    const fetchCompanies = () => {
         let url = `/api/companies`;
         if (loggedInUser.role === 'Admin' || loggedInUser.role === 'User') {
             url += `?companyId=${loggedInUser.companyId}`;
@@ -24,7 +25,28 @@ export default function AllCompany() {
             .then(res => res.json())
             .then(data => setCompanies(data))
             .catch(err => console.error("Error fetching companies:", err));
+    };
+
+    useEffect(() => {
+        fetchCompanies();
     }, []);
+
+    const handleDelete = async (c) => {
+        if (!window.confirm(`Are you sure you want to delete company "${c.name}"? This cannot be undone.`)) return;
+        try {
+            const res = await fetch(`/api/companies/${c.id}`, { method: 'DELETE' });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                alert("Company deleted successfully");
+                fetchCompanies();
+            } else {
+                alert(data.message || "Failed to delete company");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error connecting to server");
+        }
+    };
 
     const displayedCompanies = companies.filter(c => 
         c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -34,74 +56,74 @@ export default function AllCompany() {
 
     return (
         <div>
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="page-header">
                 <div>
                     <h1>All Companies</h1>
                     <p>Manage all registered companies.</p>
                 </div>
-                <div style={{ minWidth: '250px' }}>
-                    <input 
-                        type="text" 
-                        placeholder="Search companies..." 
-                        className="form-input" 
-                        style={{ margin: 0 }}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+                <input
+                    type="text"
+                    placeholder="Search companies..."
+                    className="form-input search-input"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
 
-            <div className="content-card" style={{ overflowX: 'auto' }}>
-                <table className="data-table" style={{ minWidth: '800px' }}>
+            <div className="content-card table-card">
+                <table className="data-table">
                     <thead>
                         <tr>
                             <th>Company Name</th>
                             <th>Contact Number</th>
                             <th>Address</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th className="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {displayedCompanies.map(c => (
                             <tr key={c.id}>
-                                <td>{c.name}</td>
+                                <td className="cell-strong">{c.name}</td>
                                 <td>{c.contactNumber}</td>
-                                <td>{c.address}</td>
+                                <td className="cell-muted cell-wide">{c.address}</td>
                                 <td>
-                                    <span style={{
-                                        padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        fontSize: '0.875rem',
-                                        backgroundColor: c.status === 'Active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                                        color: c.status === 'Active' ? '#10b981' : '#ef4444'
-                                    }}>
+                                    <span className={`badge ${(c.status || 'Active') === 'Active' ? 'badge-success' : 'badge-danger'}`}>
                                         {c.status || 'Active'}
                                     </span>
                                 </td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                        <button 
-                                            className="btn-primary" 
+                                <td className="col-actions">
+                                    <div className="action-buttons">
+                                        <button
+                                            className="btn-icon btn-icon-view"
                                             onClick={() => navigate('/company/edit-company', { state: { company: c, viewMode: true } })}
-                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto', backgroundColor: '#f1f5f9', color: '#475569' }}
+                                            title="View Company"
                                         >
-                                            View
+                                            <Eye />
                                         </button>
-                                        <button 
-                                            className="btn-primary" 
+                                        <button
+                                            className="btn-icon btn-icon-edit"
                                             onClick={() => navigate('/company/edit-company', { state: { company: c } })}
-                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
+                                            title="Edit Company"
                                         >
-                                            Edit
+                                            <Pencil />
                                         </button>
+                                        {isSuperAdmin && (
+                                            <button
+                                                className="btn-icon btn-icon-delete"
+                                                onClick={() => handleDelete(c)}
+                                                title="Delete Company"
+                                            >
+                                                <Trash2 />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
                         ))}
                         {displayedCompanies.length === 0 && (
                             <tr>
-                                <td colSpan="5" style={{ textAlign: 'center', padding: '1rem' }}>No companies found.</td>
+                                <td colSpan="5" className="table-empty">No companies found.</td>
                             </tr>
                         )}
                     </tbody>

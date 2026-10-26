@@ -1,20 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+
+const PERMISSION_LABELS = {
+    'dashboard': 'Manas-Matrix',
+    'add-company': 'Add Company',
+    'all-company': 'All Companies',
+    'add-user': 'Add Users',
+    'all-users': 'All Users',
+    'add-fingerprint': 'Add Fingerprint',
+    'all-fingerprints': 'All Records'
+};
+
+const ROLE_BADGE = {
+    'Super Admin': 'badge-info',
+    'Admin': 'badge-success'
+};
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
-    useEffect(() => {
+    let loggedInUser = {};
+    try {
+        loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
+    } catch (e) {
+        console.error("Corrupted local user");
+    }
 
-        let loggedInUser = {};
-        try {
-            loggedInUser = JSON.parse(localStorage.getItem('user')) || {};
-        } catch (e) {
-            console.error("Corrupted local user");
-        }
-
+    const fetchUsers = () => {
         let url = `/api/users`;
         if (loggedInUser.role === 'Admin' || loggedInUser.role === 'User') {
             url += `?companyId=${loggedInUser.companyId}`;
@@ -24,7 +39,34 @@ export default function AllUsers() {
             .then(res => res.json())
             .then(data => setUsers(data))
             .catch(err => console.error("Error fetching users:", err));
+    };
+
+    useEffect(() => {
+        fetchUsers();
     }, []);
+
+    // Mirrors the server's rules so the button only shows where a delete can succeed.
+    const canDelete = (u) =>
+        u.id !== loggedInUser.id &&
+        u.id !== 'super-admin' &&
+        (u.role !== 'Super Admin' || loggedInUser.role === 'Super Admin');
+
+    const handleDelete = async (u) => {
+        if (!window.confirm(`Are you sure you want to delete user "${u.name}"? This cannot be undone.`)) return;
+        try {
+            const res = await fetch(`/api/users/${u.id}`, { method: 'DELETE' });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                alert("User deleted successfully");
+                fetchUsers();
+            } else {
+                alert(data.message || "Failed to delete user");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error connecting to server");
+        }
+    };
 
     // `?.` only guards against null/undefined — a record whose name/email/role
     // came back as some other non-string value (e.g. a number) still throws on
@@ -39,25 +81,22 @@ export default function AllUsers() {
 
     return (
         <div>
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="page-header">
                 <div>
                     <h1>All Users</h1>
                     <p>List of all registered system users.</p>
                 </div>
-                <div style={{ minWidth: '250px' }}>
-                    <input
-                        type="text"
-                        placeholder="Search users..."
-                        className="form-input"
-                        style={{ margin: 0 }}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+                <input
+                    type="text"
+                    placeholder="Search users..."
+                    className="form-input search-input"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
 
-            <div className="content-card" style={{ overflowX: 'auto' }}>
-                <table className="data-table" style={{ minWidth: '800px' }}>
+            <div className="content-card table-card">
+                <table className="data-table">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -65,66 +104,56 @@ export default function AllUsers() {
                             <th>Role</th>
                             <th>Company ID</th>
                             <th>Permissions</th>
-                            <th>Action</th>
+                            <th className="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {displayedUsers.map(u => (
                             <tr key={u.id}>
-                                <td style={{ fontWeight: '500' }}>{u.name}</td>
+                                <td className="cell-strong">{u.name}</td>
                                 <td>{u.email}</td>
                                 <td>
-                                    <span style={{
-                                        padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        fontSize: '0.875rem',
-                                        backgroundColor: u.role === 'Super Admin' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                                        color: u.role === 'Super Admin' ? '#3b82f6' : '#10b981'
-                                    }}>
-                                        {u.role}
-                                    </span>
+                                    <span className={`badge ${ROLE_BADGE[u.role] || 'badge-neutral'}`}>{u.role}</span>
                                 </td>
-                                <td>{u.companyId || 'N/A (Super)'}</td>
-                                <td>
+                                <td className="cell-muted">{u.companyId || 'N/A (Super)'}</td>
+                                <td className="cell-muted cell-wide">
                                     {u.permissions?.includes('all')
                                         ? 'Full Access'
-                                        : (u.permissions?.map(pId => {
-                                            const match = [
-                                                { id: 'dashboard', label: 'Manas-Matrix' },
-                                                { id: 'add-company', label: 'Add Company' },
-                                                { id: 'all-company', label: 'All Companies' },
-                                                { id: 'add-user', label: 'Add Users' },
-                                                { id: 'all-users', label: 'All Users' },
-                                                { id: 'add-fingerprint', label: 'Add Fingerprint' },
-                                                { id: 'all-fingerprints', label: 'All Records' }
-                                            ].find(m => m.id === pId);
-                                            return match ? match.label : pId;
-                                        }).join(', ') || 'None')
+                                        : (u.permissions?.map(pId => PERMISSION_LABELS[pId] || pId).join(', ') || 'None')
                                     }
                                 </td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                <td className="col-actions">
+                                    <div className="action-buttons">
                                         <button
-                                            className="btn-primary"
+                                            className="btn-icon btn-icon-view"
                                             onClick={() => navigate('/company/add-user', { state: { user: u, viewMode: true } })}
-                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto', backgroundColor: '#f1f5f9', color: '#475569' }}
+                                            title="View User"
                                         >
-                                            View
+                                            <Eye />
                                         </button>
                                         <button
-                                            className="btn-primary"
-                                            style={{ padding: '0.4rem 1rem', fontSize: '0.875rem', width: 'auto' }}
+                                            className="btn-icon btn-icon-edit"
                                             onClick={() => navigate('/company/add-user', { state: { user: u } })}
+                                            title="Edit User"
                                         >
-                                            Edit
+                                            <Pencil />
                                         </button>
+                                        {canDelete(u) && (
+                                            <button
+                                                className="btn-icon btn-icon-delete"
+                                                onClick={() => handleDelete(u)}
+                                                title="Delete User"
+                                            >
+                                                <Trash2 />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
                         ))}
                         {displayedUsers.length === 0 && (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>No users found.</td>
+                                <td colSpan="6" className="table-empty">No users found.</td>
                             </tr>
                         )}
                     </tbody>

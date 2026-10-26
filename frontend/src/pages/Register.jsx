@@ -63,7 +63,7 @@ export default function Register() {
                     </div>
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <div style={{ position: 'relative' }}>
+                        <div className="password-field">
                             <input
                                 type={showPassword ? "text" : "password"}
                                 id="password"
@@ -72,26 +72,13 @@ export default function Register() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 required
-                                style={{ paddingRight: '3rem' }}
                             />
                             <button
                                 type="button"
+                                className="password-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '0.75rem',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--text-secondary)',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    padding: '0'
-                                }}
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? <EyeOff /> : <Eye />}
                             </button>
                         </div>
                     </div>

@@ -34,34 +34,40 @@ export default function AddCompany() {
     return (
         <div>
             <div className="page-header">
-                <h1>Add Company</h1>
-                <p>Register a new company into the system.</p>
+                <div>
+                    <h1>Add Company</h1>
+                    <p>Register a new company into the system.</p>
+                </div>
             </div>
 
-            <div className="content-card" style={{ maxWidth: '600px' }}>
+            <div className="content-card form-card">
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Company Name</label>
-                        <input type="text" name="name" className="form-input" value={formData.name} onChange={handleChange} required />
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label>Company Name</label>
+                            <input type="text" name="name" className="form-input" placeholder="Enter company name" value={formData.name} onChange={handleChange} required />
+                        </div>
+                        <div className="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contactNumber" className="form-input" placeholder="Enter contact number" value={formData.contactNumber} onChange={handleChange} required />
+                        </div>
+                        <div className="form-group full">
+                            <label>Address</label>
+                            <textarea name="address" className="form-input" rows="4" placeholder="Enter full address" value={formData.address} onChange={handleChange} required></textarea>
+                        </div>
+                        <div className="form-group">
+                            <label>Status</label>
+                            <select name="status" className="form-input" value={formData.status} onChange={handleChange}>
+                                <option value="Active">Active</option>
+                                <option value="Deactive">Deactive</option>
+                            </select>
+                        </div>
                     </div>
-                    <div className="form-group">
-                        <label>Contact Number</label>
-                        <input type="text" name="contactNumber" className="form-input" value={formData.contactNumber} onChange={handleChange} required />
+                    <div className="form-actions">
+                        <button type="submit" className="btn-primary">Save Company</button>
                     </div>
-                    <div className="form-group">
-                        <label>Address</label>
-                        <textarea name="address" className="form-input" rows="4" value={formData.address} onChange={handleChange} required></textarea>
-                    </div>
-                    <div className="form-group">
-                        <label>Status</label>
-                        <select name="status" className="form-input" value={formData.status} onChange={handleChange}>
-                            <option value="Active">Active</option>
-                            <option value="Deactive">Deactive</option>
-                        </select>
-                    </div>
-                    <button type="submit" className="btn-primary mt-4">Save Company</button>
                 </form>
             </div>
-        </div >
+        </div>
     );
 }

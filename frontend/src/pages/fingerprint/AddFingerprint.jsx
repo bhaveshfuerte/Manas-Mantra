@@ -205,15 +205,17 @@ export default function AddFingerprint() {
     return (
         <div style={{ paddingBottom: '2rem' }}>
             <div className="page-header">
-                <h1>Add Fingerprint Record</h1>
-                <p>Complete the profile details and capture all 30 high-quality photos.</p>
+                <div>
+                    <h1>Add Fingerprint Record</h1>
+                    <p>Complete the profile details and capture all 30 high-quality photos.</p>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="content-card">
-                    <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Personal Details</h3>
+                    <h3 className="section-title">Personal Details</h3>
 
-                    <div className="dashboard-grid">
+                    <div className="form-grid">
                         <div className="form-group">
                             <label>Full Name</label>
                             <input type="text" name="name" className="form-input" placeholder="Enter full name" value={formData.name} onChange={handleInputChange} required />
@@ -240,9 +242,9 @@ export default function AddFingerprint() {
                         </div>
                         <div className="form-group">
                             <label>Gender</label>
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                            <div className="check-group inline">
                                 {['Male', 'Female', 'Other'].map(g => (
-                                    <label key={g} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                                    <label key={g} className="check-inline">
                                         <input
                                             type="checkbox"
                                             className="round-checkbox"
@@ -258,26 +260,21 @@ export default function AddFingerprint() {
                 </div>
 
                 <div className="content-card">
-                    <h3 style={{ marginBottom: '1rem', color: 'var(--primary-color)' }}>Fingerprint Photos</h3>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                    <h3 className="section-title">Fingerprint Photos</h3>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem' }}>
                         Click on each position to open the respective back-camera and capture a high-quality photo.
                     </p>
 
-                    <div style={{
-                        position: 'sticky', top: 0, zIndex: 50,
-                        display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
-                        backgroundColor: '#f0f4ff', border: '1px solid var(--primary-color)',
-                        borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.5rem'
-                    }}>
-                        <span style={{ fontWeight: 'bold', color: 'var(--primary-color)', whiteSpace: 'nowrap' }}>
+                    <div className="upload-progress">
+                        <span style={{ whiteSpace: 'nowrap' }}>
                             {uploadedCount} / {totalSlots} photos uploaded
                         </span>
-                        <div style={{ flex: 1, minWidth: '100px', height: '8px', backgroundColor: '#dbe4ff', borderRadius: '999px', overflow: 'hidden' }}>
-                            <div style={{ width: `${(uploadedCount / totalSlots) * 100}%`, height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.3s ease' }} />
+                        <div className="upload-progress-track">
+                            <div className="upload-progress-fill" style={{ width: `${(uploadedCount / totalSlots) * 100}%` }} />
                         </div>
                         {uploadingSlot && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--primary-color)', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                                <Loader2 size={16} style={{ animation: 'spin 2s linear infinite' }} />
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                                <Loader2 size={16} className="spin" />
                                 Uploading {uploadingSlot.finger.replace('_', ' ')} {uploadingSlot.pos}...
                             </span>
                         )}
@@ -293,9 +290,9 @@ export default function AddFingerprint() {
                                         return (
                                             <div key={`${finger}-${pos}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
                                                 {uploadingSlot?.finger === finger && uploadingSlot?.pos === pos ? (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '10px', minHeight: '60px', backgroundColor: '#f0f4ff', borderRadius: '8px' }}>
-                                                        <Loader2 size={24} style={{ animation: 'spin 2s linear infinite', color: 'var(--primary-color)' }} />
-                                                        <span style={{ fontSize: '0.75rem', marginTop: '6px', color: 'var(--primary-color)', fontWeight: 'bold' }}>Uploading...</span>
+                                                    <div className="slot-uploading">
+                                                        <Loader2 size={24} className="spin" />
+                                                        <span style={{ marginTop: '6px' }}>Uploading...</span>
                                                     </div>
                                                 ) : (
                                                     <>
@@ -327,10 +324,10 @@ export default function AddFingerprint() {
                     </div>
                 </div>
 
-                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                    <button type="submit" disabled={isSaving || !!uploadingSlot} className="btn-primary" style={{ maxWidth: '400px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                        {isSaving ? <Loader2 size={20} style={{ animation: 'spin 2s linear infinite' }} /> : <Upload size={20} />}
-                        {isSaving ? 'Saving Record...' : 'Save Entire Record to Database'}
+                <div className="form-actions">
+                    <button type="submit" disabled={isSaving || !!uploadingSlot} className="btn-primary">
+                        {isSaving ? <Loader2 className="spin" /> : <Upload />}
+                        {isSaving ? 'Saving Record...' : 'Save Record'}
                     </button>
                 </div>
             </form>

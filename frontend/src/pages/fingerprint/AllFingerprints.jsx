@@ -130,15 +130,31 @@ export default function AllFingerprints() {
             }
         } catch(e) {}
 
+        // Logo priority: the record's company → the downloader's company (both above) →
+        // the downloader's own "PDF Logo" (set on Add/Edit User) → the first company
+        // that has a logo. Always read from the server: localStorage only holds what
+        // was there at login, so a logo saved later never reached the PDF after a re-login.
+        if (!compLogoBase64) {
+            try {
+                const localUser = JSON.parse(localStorage.getItem('user')) || {};
+                const usersRes = await fetch(`/api/users`);
+                if (usersRes.ok) {
+                    const me = (await usersRes.json()).find(u => u.id === localUser.id);
+                    compLogoBase64 = me?.logoBase64 || null;
+                }
+                if (!compLogoBase64) {
+                    const allCompRes = await fetch(`/api/companies`);
+                    if (allCompRes.ok) {
+                        compLogoBase64 = (await allCompRes.json()).find(c => c.logoBase64)?.logoBase64 || null;
+                    }
+                }
+            } catch (e) {}
+        }
+
         let logoObj = null;
         try {
             if (compLogoBase64) {
                 logoObj = await getImageMetadata(compLogoBase64);
-            } else {
-                const localUser = JSON.parse(localStorage.getItem('user'));
-                if (localUser && localUser.logoBase64) {
-                    logoObj = await getImageMetadata(localUser.logoBase64);
-                }
             }
         } catch (e) {}
 
@@ -423,27 +439,24 @@ export default function AllFingerprints() {
 
     return (
         <div style={{ paddingBottom: '2rem' }}>
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="page-header">
                 <div>
                     <h1>All Fingerprint Records</h1>
                     <p>List of all entered biometric profiles with high-quality PDF exports.</p>
                 </div>
                 {loggedInUser.role === 'Super Admin' && (
-                    <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
-                        <input 
-                            type="text" 
-                            className="form-input" 
-                            style={{ margin: 0, minWidth: '250px' }}
-                            placeholder="Search by Company or Name..."
-                            value={searchName}
-                            onChange={(e) => setSearchName(e.target.value)}
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        className="form-input search-input"
+                        placeholder="Search by Company or Name..."
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                    />
                 )}
             </div>
 
-            <div className="content-card" style={{ overflowX: 'auto' }}>
-                <table className="data-table" style={{ minWidth: '800px' }}>
+            <div className="content-card table-card">
+                <table className="data-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -453,126 +466,62 @@ export default function AllFingerprints() {
                             <th>City</th>
                             <th>Contact</th>
                             <th>Scan Date</th>
-                            <th>Actions</th>
+                            <th className="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {displayedRecords.map(record => (
                             <tr key={record.id}>
-                                <td data-label="ID">
-                                    <div style={{ fontWeight: 600 }}>#{record.id.slice(-6)}</div>
-                                </td>
-                                <td data-label="Name">
-                                    <div style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{record.name}</div>
-                                </td>
-                                <td data-label="Birth Date">
-                                    <div>{record.birthDate || '-'}</div>
-                                </td>
-                                <td data-label="Gender">
-                                    <div>{record.gender || '-'}</div>
-                                </td>
-                                <td data-label="City">
-                                    <div>{record.city || '-'}</div>
-                                </td>
-                                <td data-label="Contact">
-                                    <div style={{ fontSize: '0.85rem' }}>{record.contactDetails || '-'}</div>
-                                </td>
-                                <td data-label="Scan Date">
-                                    <div style={{ fontSize: '0.85rem' }}>{new Date(record.scannedAt).toLocaleDateString()}</div>
-                                </td>
-                                <td data-label="Actions">
-                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap', width: '100%' }}>
+                                <td className="cell-muted">#{record.id.slice(-6)}</td>
+                                <td className="cell-strong">{record.name}</td>
+                                <td>{record.birthDate || '-'}</td>
+                                <td>{record.gender || '-'}</td>
+                                <td>{record.city || '-'}</td>
+                                <td>{record.contactDetails || '-'}</td>
+                                <td className="cell-nowrap">{new Date(record.scannedAt).toLocaleDateString()}</td>
+                                <td className="col-actions">
+                                    <div className="action-buttons">
                                         <button
-                                            onClick={() => window.open(`/fingerprint/view/${record.id}`, '_blank')}
-                                            className="btn-primary"
-                                            style={{
-                                                padding: '0.5rem',
-                                                width: '32px',
-                                                height: '32px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                backgroundColor: '#f1f5f9',
-                                                color: '#475569'
-                                            }}
+                                            onClick={() => navigate(`/fingerprint/view/${record.id}`)}
+                                            className="btn-icon btn-icon-view"
                                             title="View Record"
                                         >
-                                            <Eye size={16} />
+                                            <Eye />
                                         </button>
                                         <button
                                             onClick={() => navigate(`/fingerprint/edit/${record.id}`)}
-                                            className="btn-primary"
-                                            style={{
-                                                padding: '0.5rem',
-                                                width: '32px',
-                                                height: '32px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                backgroundColor: '#fef9c3',
-                                                color: '#854d0e'
-                                            }}
+                                            className="btn-icon btn-icon-edit"
                                             title="Edit Record"
                                         >
-                                            <Pencil size={16} />
+                                            <Pencil />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(record.id)}
-                                            className="btn-primary"
-                                        style={{
-                                            padding: '0.5rem',
-                                            width: '32px',
-                                            height: '32px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            backgroundColor: '#fee2e2',
-                                            color: '#991b1b'
-                                        }}
-                                        title="Delete Record"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPDF(record)}
-                                        disabled={downloadingId === record.id}
-                                        className="btn-primary"
-                                        style={{
-                                            padding: '0.5rem',
-                                            width: '32px',
-                                            height: '32px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            opacity: downloadingId === record.id ? 0.7 : 1
-                                        }}
-                                        title="Download PDF"
-                                    >
-                                        {downloadingId === record.id ? (
-                                            <><Loader2 size={16} className="spinner" style={{ animation: 'spin 2s linear infinite' }} /></>
-                                        ) : (
-                                            <><Download size={16} /></>
-                                        )}
-                                    </button>
+                                            className="btn-icon btn-icon-delete"
+                                            title="Delete Record"
+                                        >
+                                            <Trash2 />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDownloadPDF(record)}
+                                            disabled={downloadingId === record.id}
+                                            className="btn-icon btn-icon-download"
+                                            title="Download PDF"
+                                        >
+                                            {downloadingId === record.id ? <Loader2 className="spin" /> : <Download />}
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         ))}
                         {displayedRecords.length === 0 && (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem 1rem' }}>No records found.</td>
+                                <td colSpan="8" className="table-empty">No records found.</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
-
-            <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
         </div>
     );
 }

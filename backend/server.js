@@ -158,6 +158,30 @@ app.put('/api/companies/:id', (req, res) => {
     res.status(200).json({ message: 'Company updated', company: db.companies[index] });
 });
 
+app.delete('/api/companies/:id', (req, res) => {
+    const { id } = req.params;
+    if (req.authUser.role !== 'Super Admin') {
+        return res.status(403).json({ message: 'Only a Super Admin can delete a company' });
+    }
+    const index = db.companies.findIndex(c => c.id === id);
+    if (index === -1) return res.status(404).json({ message: 'Company not found' });
+
+    // Refuse rather than cascade: deleting a company that still has users or
+    // records would leave those users able to log in under a company that no
+    // longer exists, and silently wiping records is too destructive.
+    const userCount = db.users.filter(u => u.companyId === id).length;
+    const recordCount = db.fingerprints.filter(f => f.companyId === id).length;
+    if (userCount || recordCount) {
+        return res.status(400).json({
+            message: `This company still has ${userCount} user(s) and ${recordCount} fingerprint record(s). Delete them first, then delete the company.`
+        });
+    }
+
+    db.companies.splice(index, 1);
+    saveDb();
+    res.status(200).json({ message: 'Company deleted successfully' });
+});
+
 app.post('/api/users', (req, res) => {
     const { name, email, password, role, companyId, permissions } = req.body;
     const isSuperAdmin = req.authUser.role === 'Super Admin';
@@ -198,6 +222,29 @@ app.put('/api/users/:id', (req, res) => {
     db.users[index] = { ...db.users[index], ...update };
     saveDb();
     res.status(200).json({ message: 'User updated', user: db.users[index] });
+});
+
+app.delete('/api/users/:id', (req, res) => {
+    const { id } = req.params;
+    const isSuperAdmin = req.authUser.role === 'Super Admin';
+    const index = db.users.findIndex(u => u.id === id);
+    if (index === -1) return res.status(404).json({ message: 'User not found' });
+    const target = db.users[index];
+    if (target.id === req.authUser.id) {
+        return res.status(400).json({ message: 'You cannot delete your own account' });
+    }
+    // Only a Super Admin can remove another Super Admin, and the built-in root
+    // account is never deletable so the system can't be locked out.
+    if (target.id === 'super-admin' || (target.role === 'Super Admin' && !isSuperAdmin)) {
+        return res.status(403).json({ message: 'This user cannot be deleted' });
+    }
+    if (!isSuperAdmin && target.companyId !== req.authUser.companyId) {
+        return res.status(403).json({ message: 'You do not have access to this user' });
+    }
+
+    db.users.splice(index, 1);
+    saveDb();
+    res.status(200).json({ message: 'User deleted successfully' });
 });
 
 app.get('/api/users', (req, res) => {

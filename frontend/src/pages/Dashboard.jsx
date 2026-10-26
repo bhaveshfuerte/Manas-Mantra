@@ -57,8 +57,10 @@ export default function Dashboard() {
     return (
         <div>
             <div className="page-header">
-                <h1>Manas-Matrix</h1>
-                <p>Welcome to ScannerApp centralized Manas-Matrix instance.</p>
+                <div>
+                    <h1>Manas-Matrix</h1>
+                    <p>Welcome to ScannerApp centralized Manas-Matrix instance.</p>
+                </div>
             </div>
 
             {loading ? (
@@ -82,12 +84,12 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <div className="content-card" style={{ overflowX: 'auto', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="content-card table-card">
+                        <div className="table-card-header">
+                            <h3>
                                 <FileText size={20} color="var(--primary-color)" /> Recent Scans
                             </h3>
-                            <button 
+                            <button
                                 onClick={() => navigate('/fingerprint/all')}
                                 style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
                             >
@@ -97,71 +99,48 @@ export default function Dashboard() {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th style={{ padding: '1rem' }}>Candidate</th>
+                                    <th>Candidate</th>
                                     <th>Study / Occupation</th>
                                     <th>Date & Time</th>
                                     <th>Status</th>
-                                    <th style={{ textAlign: 'right' }}>Actions</th>
+                                    <th className="col-actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recentScans.length > 0 ? (
                                     recentScans.map(scan => (
-                                        <tr key={scan.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                            <td data-label="Candidate" style={{ padding: '0.8rem 1rem' }}>
+                                        <tr key={scan.id}>
+                                            <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                         <User size={18} color="var(--text-secondary)" />
                                                     </div>
-                                                    <div style={{ textAlign: 'left' }}>
-                                                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{scan.name}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>#{scan.id.slice(-6)}</div>
+                                                    <div>
+                                                        <div className="cell-strong">{scan.name}</div>
+                                                        <div className="cell-muted" style={{ fontSize: '0.75rem' }}>#{scan.id.slice(-6)}</div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td data-label="Study / Occupation">
-                                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{scan.study || 'N/A'}</div>
+                                            <td className="cell-muted">{scan.study || 'N/A'}</td>
+                                            <td className="cell-muted cell-nowrap">
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                                    <Calendar size={14} />
+                                                    {new Date(scan.scannedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                                                    {' • '}
+                                                    {new Date(scan.scannedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
                                             </td>
-                                            <td data-label="Date & Time">
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.8rem', justifyContent: 'flex-end' }}>
-                                                    <Calendar size={12} />
-                                                    <span>
-                                                        {new Date(scan.scannedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-                                                        <span style={{ color: 'var(--text-secondary)', margin: '0 4px' }}>•</span>
-                                                        {new Date(scan.scannedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                </div>
+                                            <td>
+                                                <span className="badge badge-success">Verified</span>
                                             </td>
-                                            <td data-label="Status">
-                                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                    <span style={{ 
-                                                        padding: '4px 10px', 
-                                                        borderRadius: '20px', 
-                                                        fontSize: '0.65rem', 
-                                                        fontWeight: 700, 
-                                                        textTransform: 'uppercase',
-                                                        backgroundColor: '#dcfce7',
-                                                        color: '#166534'
-                                                    }}>
-                                                        Verified
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td data-label="Actions" style={{ textAlign: 'right' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            <td className="col-actions">
+                                                <div className="action-buttons">
                                                     <button
-                                                        onClick={() => window.open(`/fingerprint/view/${scan.id}`, '_blank')}
-                                                        style={{ 
-                                                            padding: '6px', 
-                                                            borderRadius: '6px', 
-                                                            backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-                                                            border: 'none', 
-                                                            color: 'var(--text-secondary)',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                        title="View Profile"
+                                                        onClick={() => navigate(`/fingerprint/view/${scan.id}`)}
+                                                        className="btn-icon btn-icon-view"
+                                                        title="View Record"
                                                     >
-                                                        <Eye size={18} />
+                                                        <Eye />
                                                     </button>
                                                 </div>
                                             </td>
@@ -169,7 +148,7 @@ export default function Dashboard() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                                        <td colSpan="5" className="table-empty">
                                             <div style={{ marginBottom: '0.5rem' }}><FileText size={32} opacity={0.3} style={{ margin: '0 auto' }} /></div>
                                             No recent activity detected.
                                         </td>

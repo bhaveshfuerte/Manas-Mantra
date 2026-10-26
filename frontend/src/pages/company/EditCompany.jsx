@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import BackButton from '../../components/BackButton';
 
 export default function EditCompany() {
     const location = useLocation();
@@ -43,40 +44,44 @@ export default function EditCompany() {
 
     return (
         <div style={{ paddingBottom: '2rem' }}>
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="page-header">
                 <div>
                     <h1>{isViewMode ? 'View Company' : 'Edit Company'}</h1>
                     <p>{isViewMode ? `Viewing details for ${passedCompany.name}.` : `Update details and settings for ${passedCompany.name}.`}</p>
                 </div>
-                <button className="btn-secondary" onClick={() => navigate('/company/all-company')} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}>
-                    {isViewMode ? 'Back' : 'Cancel'}
-                </button>
+                <BackButton to="/company/all-company" />
             </div>
 
-            <div className="content-card" style={{ maxWidth: '600px' }}>
+            <div className="content-card form-card">
                 <form onSubmit={handleSubmit}>
                     <fieldset disabled={isViewMode} style={{ border: 'none', padding: 0, margin: 0 }}>
-                        <div className="form-group">
-                            <label>Company Name</label>
-                        <input type="text" name="name" className="form-input" value={companyDetails.name} onChange={handleChange} required />
-                    </div>
-                    <div className="form-group">
-                        <label>Contact Number</label>
-                        <input type="text" name="contactNumber" className="form-input" value={companyDetails.contactNumber} onChange={handleChange} required />
-                    </div>
-                    <div className="form-group">
-                        <label>Address</label>
-                        <textarea name="address" className="form-input" rows="4" value={companyDetails.address} onChange={handleChange} required></textarea>
-                    </div>
-                    <div className="form-group">
-                         <label>Status</label>
-                         <select name="status" className="form-input" value={companyDetails.status} onChange={handleChange}>
-                             <option value="Active">Active</option>
-                             <option value="Deactive">Deactive</option>
-                         </select>
-                    </div>
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label>Company Name</label>
+                                <input type="text" name="name" className="form-input" placeholder="Enter company name" value={companyDetails.name} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Contact Number</label>
+                                <input type="text" name="contactNumber" className="form-input" placeholder="Enter contact number" value={companyDetails.contactNumber} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group full">
+                                <label>Address</label>
+                                <textarea name="address" className="form-input" rows="4" placeholder="Enter full address" value={companyDetails.address} onChange={handleChange} required></textarea>
+                            </div>
+                            <div className="form-group">
+                                <label>Status</label>
+                                <select name="status" className="form-input" value={companyDetails.status} onChange={handleChange}>
+                                    <option value="Active">Active</option>
+                                    <option value="Deactive">Deactive</option>
+                                </select>
+                            </div>
+                        </div>
                     </fieldset>
-                    {!isViewMode && <button type="submit" className="btn-primary mt-4">Save Updates</button>}
+                    {!isViewMode && (
+                        <div className="form-actions">
+                            <button type="submit" className="btn-primary">Save Changes</button>
+                        </div>
+                    )}
                 </form>
             </div>
         </div>

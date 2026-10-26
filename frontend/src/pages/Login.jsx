@@ -41,7 +41,7 @@ export default function Login() {
             <div className="auth-card">
                 <h1>Welcome Back</h1>
                 {error && (
-                    <div style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem', textAlign: 'center' }}>
+                    <div className="alert-error">
                         {error}
                     </div>
                 )}
@@ -60,7 +60,7 @@ export default function Login() {
                     </div>
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <div style={{ position: 'relative' }}>
+                        <div className="password-field">
                             <input
                                 type={showPassword ? "text" : "password"}
                                 id="password"
@@ -69,26 +69,13 @@ export default function Login() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 required
-                                style={{ paddingRight: '3rem' }}
                             />
                             <button
                                 type="button"
+                                className="password-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '0.75rem',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--text-secondary)',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    padding: '0'
-                                }}
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? <EyeOff /> : <Eye />}
                             </button>
                         </div>
                     </div>
